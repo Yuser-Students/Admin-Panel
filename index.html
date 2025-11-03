@@ -8,16 +8,6 @@
     <style>
         * {
             margin: 0;
-            padding: 0;<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام يُسر - لوحة تحكم المديرة</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
@@ -28,6 +18,7 @@
             min-height: 100vh;
         }
 
+        /* Login Page */
         .login-container {
             display: flex;
             justify-content: center;
@@ -137,12 +128,7 @@
             border: 1px solid #ef4444;
         }
 
-        .alert-success {
-            background: #d1fae5;
-            color: #065f46;
-            border: 1px solid #10b981;
-        }
-
+        /* Dashboard */
         .dashboard {
             display: none;
         }
@@ -190,6 +176,7 @@
             padding: 0 20px;
         }
 
+        /* Statistics */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -227,6 +214,7 @@
             color: #333;
         }
 
+        /* Filters */
         .filters {
             background: white;
             padding: 20px;
@@ -254,6 +242,7 @@
             padding: 10px;
         }
 
+        /* Table */
         .table-container {
             background: white;
             border-radius: 12px;
@@ -363,6 +352,7 @@
             color: white;
         }
 
+        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -516,6 +506,7 @@
     </style>
 </head>
 <body>
+    <!-- Login Page -->
     <div id="loginPage" class="login-container">
         <div class="login-box">
             <div class="login-header">
@@ -542,6 +533,7 @@
         </div>
     </div>
 
+    <!-- Dashboard -->
     <div id="dashboard" class="dashboard">
         <nav class="navbar">
             <div class="navbar-title">👩‍💼 لوحة تحكم المديرة - نظام يُسر</div>
@@ -549,6 +541,7 @@
         </nav>
 
         <div class="dashboard-content">
+            <!-- Statistics -->
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-icon">📊</div>
@@ -583,6 +576,7 @@
                 </div>
             </div>
 
+            <!-- Filters -->
             <div class="filters">
                 <div class="filter-group">
                     <label class="filter-label">البحث</label>
@@ -607,6 +601,7 @@
                 </div>
             </div>
 
+            <!-- Table -->
             <div class="table-container">
                 <div class="table-responsive">
                     <table id="excusesTable">
@@ -640,6 +635,7 @@
         </div>
     </div>
 
+    <!-- View Modal -->
     <div id="viewModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -650,6 +646,7 @@
         </div>
     </div>
 
+    <!-- Approve Modal -->
     <div id="approveModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -670,6 +667,7 @@
         </div>
     </div>
 
+    <!-- Reject Modal -->
     <div id="rejectModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -691,13 +689,13 @@
     </div>
 
     <script>
-        // ضع رابط Web App الخاص بك هنا
+        // ضع هنا Web App URL الخاص بك
         const API_URL = 'https://script.google.com/macros/s/AKfycbyzLmNcvkJWG-0IUzXL4_omYaarctRfnlWx1dH5FR9Ko9oP3soELaue7Olx9AYzcoxEzg/exec';
         
         let allExcuses = [];
         let currentExcuse = null;
 
-        // Login Handler
+        // Login
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -709,13 +707,9 @@
             try {
                 submitBtn.disabled = true;
                 submitBtn.textContent = 'جاري التحقق...';
-                loginAlert.style.display = 'none';
 
                 const response = await fetch(API_URL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
                     body: JSON.stringify({
                         action: 'adminLogin',
                         username: username,
@@ -729,14 +723,13 @@
                     sessionStorage.setItem('adminLoggedIn', 'true');
                     document.getElementById('loginPage').style.display = 'none';
                     document.getElementById('dashboard').classList.add('active');
-                    await loadDashboard();
+                    loadDashboard();
                 } else {
-                    loginAlert.textContent = result.message || 'اسم المستخدم أو كلمة المرور غير صحيحة';
+                    loginAlert.textContent = result.message;
                     loginAlert.style.display = 'block';
                 }
             } catch (error) {
-                console.error('Login error:', error);
-                loginAlert.textContent = 'خطأ في الاتصال بالخادم. تحقق من رابط API';
+                loginAlert.textContent = 'خطأ في الاتصال بالخادم';
                 loginAlert.style.display = 'block';
             } finally {
                 submitBtn.disabled = false;
@@ -744,39 +737,33 @@
             }
         });
 
+        // Logout
         document.getElementById('logoutBtn').addEventListener('click', () => {
             sessionStorage.removeItem('adminLoggedIn');
             location.reload();
         });
 
+        // Check if already logged in
         if (sessionStorage.getItem('adminLoggedIn') === 'true') {
             document.getElementById('loginPage').style.display = 'none';
             document.getElementById('dashboard').classList.add('active');
             loadDashboard();
         }
 
+        // Load Dashboard
         async function loadDashboard() {
-            try {
-                await Promise.all([
-                    loadStatistics(),
-                    loadExcuses()
-                ]);
-            } catch (error) {
-                console.error('Error loading dashboard:', error);
-                alert('خطأ في تحميل البيانات. تحقق من رابط API');
-            }
+            await Promise.all([
+                loadStatistics(),
+                loadExcuses()
+            ]);
         }
 
+        // Load Statistics
         async function loadStatistics() {
             try {
                 const response = await fetch(API_URL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ 
-                        action: 'getStatistics' 
-                    })
+                    body: JSON.stringify({ action: 'getStatistics' })
                 });
 
                 const result = await response.json();
@@ -792,16 +779,12 @@
             }
         }
 
+        // Load Excuses
         async function loadExcuses() {
             try {
                 const response = await fetch(API_URL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ 
-                        action: 'getAllExcuses' 
-                    })
+                    body: JSON.stringify({ action: 'getAllExcuses' })
                 });
 
                 const result = await response.json();
@@ -810,95 +793,16 @@
                     allExcuses = result.data;
                     populateGradeFilter();
                     displayExcuses(allExcuses);
-                } else {
-                    console.error('Error:', result.message);
                 }
             } catch (error) {
                 console.error('Error loading excuses:', error);
             }
         }
 
-        function loadDemoData() {
-            allExcuses = [
-                {
-                    rowIndex: 2,
-                    studentId: '2024001',
-                    studentName: 'نورة أحمد الشمري',
-                    grade: 'الأول الثانوي',
-                    class: 'أ',
-                    civilId: '123456789',
-                    senderPhone: '0501234567',
-                    excuseNumber: 1,
-                    excuseDate: '2025-11-05',
-                    excuseTime: '09:00 صباحاً',
-                    reason: 'موعد طبي في المستشفى',
-                    status: 'قيد المراجعة',
-                    reply: '',
-                    replyDate: '',
-                    whatsappStatus: 'لم يتم الإرسال',
-                    totalExcuses: 1
-                },
-                {
-                    rowIndex: 3,
-                    studentId: '2024002',
-                    studentName: 'سارة محمد العتيبي',
-                    grade: 'الثاني الثانوي',
-                    class: 'ب',
-                    civilId: '987654321',
-                    senderPhone: '0509876543',
-                    excuseNumber: 2,
-                    excuseDate: '2025-11-04',
-                    excuseTime: '10:30 صباحاً',
-                    reason: 'ظرف عائلي طارئ',
-                    status: 'مقبول',
-                    reply: 'تمت الموافقة على الاستئذان',
-                    replyDate: '2025-11-03 14:30:00',
-                    whatsappStatus: 'تم الإرسال',
-                    totalExcuses: 2
-                },
-                {
-                    rowIndex: 4,
-                    studentId: '2024003',
-                    studentName: 'مها خالد القحطاني',
-                    grade: 'الثالث الثانوي',
-                    class: 'أ',
-                    civilId: '456789123',
-                    senderPhone: '0554567891',
-                    excuseNumber: 1,
-                    excuseDate: '2025-11-06',
-                    excuseTime: '11:00 صباحاً',
-                    reason: 'سفر للمشاركة في مسابقة علمية',
-                    status: 'قيد المراجعة',
-                    reply: '',
-                    replyDate: '',
-                    whatsappStatus: 'لم يتم الإرسال',
-                    totalExcuses: 1
-                }
-            ];
-
-            populateGradeFilter();
-            displayExcuses(allExcuses);
-            updateStatsDisplay();
-        }
-
-        function updateStatsDisplay() {
-            const stats = {
-                total: allExcuses.length,
-                pending: allExcuses.filter(e => e.status === 'قيد المراجعة').length,
-                approved: allExcuses.filter(e => e.status === 'مقبول').length,
-                rejected: allExcuses.filter(e => e.status === 'مرفوض').length
-            };
-
-            document.getElementById('totalCount').textContent = stats.total;
-            document.getElementById('pendingCount').textContent = stats.pending;
-            document.getElementById('approvedCount').textContent = stats.approved;
-            document.getElementById('rejectedCount').textContent = stats.rejected;
-        }
-
+        // Populate Grade Filter
         function populateGradeFilter() {
             const grades = [...new Set(allExcuses.map(e => e.grade))];
             const gradeFilter = document.getElementById('gradeFilter');
-            gradeFilter.innerHTML = '<option value="">الكل</option>';
             
             grades.forEach(grade => {
                 const option = document.createElement('option');
@@ -908,6 +812,7 @@
             });
         }
 
+        // Display Excuses
         function displayExcuses(excuses) {
             const tbody = document.getElementById('excusesTableBody');
             
@@ -929,8 +834,6 @@
                 const statusClass = excuse.status === 'قيد المراجعة' ? 'status-pending' : 
                                    excuse.status === 'مقبول' ? 'status-approved' : 'status-rejected';
                 
-                const excuseData = JSON.stringify(excuse).replace(/"/g, '&quot;');
-                
                 return `
                     <tr>
                         <td>${excuse.studentId}</td>
@@ -944,10 +847,10 @@
                         <td><span class="status-badge ${statusClass}">${excuse.status}</span></td>
                         <td>
                             <div class="action-buttons">
-                                <button class="icon-btn btn-view" onclick='viewExcuse(${excuseData})'>👁️</button>
+                                <button class="icon-btn btn-view" onclick='viewExcuse(${JSON.stringify(excuse)})'>👁️</button>
                                 ${excuse.status === 'قيد المراجعة' ? `
-                                    <button class="icon-btn btn-approve" onclick='openApproveModal(${excuseData})'>✅</button>
-                                    <button class="icon-btn btn-reject" onclick='openRejectModal(${excuseData})'>❌</button>
+                                    <button class="icon-btn btn-approve" onclick='openApproveModal(${JSON.stringify(excuse)})'>✅</button>
+                                    <button class="icon-btn btn-reject" onclick='openRejectModal(${JSON.stringify(excuse)})'>❌</button>
                                 ` : ''}
                             </div>
                         </td>
@@ -956,11 +859,34 @@
             }).join('');
         }
 
+        // Filters
+        document.getElementById('searchFilter').addEventListener('input', applyFilters);
+        document.getElementById('statusFilter').addEventListener('change', applyFilters);
+        document.getElementById('gradeFilter').addEventListener('change', applyFilters);
+
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchFilter').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            const gradeFilter = document.getElementById('gradeFilter').value;
+
+            const filtered = allExcuses.filter(excuse => {
+                const matchSearch = excuse.studentName.toLowerCase().includes(searchTerm) || 
+                                   excuse.studentId.toString().includes(searchTerm);
+                const matchStatus = !statusFilter || excuse.status === statusFilter;
+                const matchGrade = !gradeFilter || excuse.grade === gradeFilter;
+
+                return matchSearch && matchStatus && matchGrade;
+            });
+
+            displayExcuses(filtered);
+        }
+
+        // View Excuse
         function viewExcuse(excuse) {
             const modalBody = document.getElementById('viewModalBody');
             modalBody.innerHTML = `
                 <div class="info-item">
-                    <div class="info-item-label">👤 اسم الطالبة</div>
+                    <div class="info-item-label">📌 اسم الطالبة</div>
                     <div class="info-item-value">${excuse.studentName}</div>
                 </div>
                 <div class="info-item">
@@ -968,8 +894,16 @@
                     <div class="info-item-value">${excuse.studentId}</div>
                 </div>
                 <div class="info-item">
-                    <div class="info-item-label">📚 الصف والفصل</div>
-                    <div class="info-item-value">${excuse.grade} - ${excuse.class}</div>
+                    <div class="info-item-label">🎓 الصف والفصل</div>
+                    <div class="info-item-value">${excuse.grade} - فصل ${excuse.class}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-item-label">📱 رقم الجوال المُرسِل</div>
+                    <div class="info-item-value">${excuse.senderPhone}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-item-label">🔢 رقم الاستئذان</div>
+                    <div class="info-item-value">${excuse.excuseNumber}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-item-label">📅 تاريخ الاستئذان</div>
@@ -984,189 +918,4 @@
                     <div class="info-item-value">${excuse.reason}</div>
                 </div>
                 <div class="info-item">
-                    <div class="info-item-label">🔢 رقم الاستئذان</div>
-                    <div class="info-item-value">${excuse.excuseNumber}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-item-label">📊 إجمالي الاستئذانات</div>
-                    <div class="info-item-value">${excuse.totalExcuses}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-item-label">📱 رقم هاتف ولي الأمر</div>
-                    <div class="info-item-value">${excuse.senderPhone}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-item-label">🏷️ الحالة</div>
-                    <div class="info-item-value">
-                        <span class="status-badge ${excuse.status === 'قيد المراجعة' ? 'status-pending' : excuse.status === 'مقبول' ? 'status-approved' : 'status-rejected'}">
-                            ${excuse.status}
-                        </span>
-                    </div>
-                </div>
-                ${excuse.reply ? `
-                    <div class="info-item">
-                        <div class="info-item-label">💬 رد المديرة</div>
-                        <div class="info-item-value">${excuse.reply}</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-item-label">📅 تاريخ الرد</div>
-                        <div class="info-item-value">${excuse.replyDate}</div>
-                    </div>
-                ` : ''}
-            `;
-            
-            document.getElementById('viewModal').classList.add('active');
-        }
-
-        function openApproveModal(excuse) {
-            currentExcuse = excuse;
-            const infoDiv = document.getElementById('approveInfo');
-            infoDiv.innerHTML = `
-                <div class="info-item">
-                    <div class="info-item-label">👤 اسم الطالبة</div>
-                    <div class="info-item-value">${excuse.studentName}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-item-label">📚 الصف</div>
-                    <div class="info-item-value">${excuse.grade} - ${excuse.class}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-item-label">📝 سبب الاستئذان</div>
-                    <div class="info-item-value">${excuse.reason}</div>
-                </div>
-            `;
-            document.getElementById('approveReply').value = '';
-            document.getElementById('approveModal').classList.add('active');
-        }
-
-        function openRejectModal(excuse) {
-            currentExcuse = excuse;
-            const infoDiv = document.getElementById('rejectInfo');
-            infoDiv.innerHTML = `
-                <div class="info-item">
-                    <div class="info-item-label">👤 اسم الطالبة</div>
-                    <div class="info-item-value">${excuse.studentName}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-item-label">📚 الصف</div>
-                    <div class="info-item-value">${excuse.grade} - ${excuse.class}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-item-label">📝 سبب الاستئذان</div>
-                    <div class="info-item-value">${excuse.reason}</div>
-                </div>
-            `;
-            document.getElementById('rejectReply').value = '';
-            document.getElementById('rejectModal').classList.add('active');
-        }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('active');
-        }
-
-        document.getElementById('confirmApproveBtn').addEventListener('click', async () => {
-            const reply = document.getElementById('approveReply').value.trim();
-            
-            if (!reply) {
-                alert('يرجى كتابة رد الموافقة');
-                return;
-            }
-
-            const btn = document.getElementById('confirmApproveBtn');
-            btn.disabled = true;
-            btn.textContent = 'جاري الموافقة...';
-
-            try {
-                const index = allExcuses.findIndex(e => e.rowIndex === currentExcuse.rowIndex);
-                if (index !== -1) {
-                    allExcuses[index].status = 'مقبول';
-                    allExcuses[index].reply = reply;
-                    allExcuses[index].replyDate = new Date().toLocaleString('ar-SA');
-                    allExcuses[index].whatsappStatus = 'تم الإرسال';
-                }
-
-                displayExcuses(applyFilters());
-                updateStatsDisplay();
-                closeModal('approveModal');
-
-                alert('✅ تمت الموافقة على الاستئذان بنجاح');
-            } catch (error) {
-                alert('حدث خطأ أثناء الموافقة');
-            } finally {
-                btn.disabled = false;
-                btn.textContent = 'تأكيد الموافقة';
-            }
-        });
-
-        document.getElementById('confirmRejectBtn').addEventListener('click', async () => {
-            const reply = document.getElementById('rejectReply').value.trim();
-            
-            if (!reply) {
-                alert('يرجى كتابة سبب الرفض');
-                return;
-            }
-
-            const btn = document.getElementById('confirmRejectBtn');
-            btn.disabled = true;
-            btn.textContent = 'جاري الرفض...';
-
-            try {
-                const index = allExcuses.findIndex(e => e.rowIndex === currentExcuse.rowIndex);
-                if (index !== -1) {
-                    allExcuses[index].status = 'مرفوض';
-                    allExcuses[index].reply = reply;
-                    allExcuses[index].replyDate = new Date().toLocaleString('ar-SA');
-                    allExcuses[index].whatsappStatus = 'تم الإرسال';
-                }
-
-                displayExcuses(applyFilters());
-                updateStatsDisplay();
-                closeModal('rejectModal');
-
-                alert('❌ تم رفض الاستئذان');
-            } catch (error) {
-                alert('حدث خطأ أثناء الرفض');
-            } finally {
-                btn.disabled = false;
-                btn.textContent = 'تأكيد الرفض';
-            }
-        });
-
-        function applyFilters() {
-            const searchTerm = document.getElementById('searchFilter').value.toLowerCase();
-            const statusFilter = document.getElementById('statusFilter').value;
-            const gradeFilter = document.getElementById('gradeFilter').value;
-
-            return allExcuses.filter(excuse => {
-                const matchesSearch = !searchTerm || 
-                    excuse.studentName.toLowerCase().includes(searchTerm) ||
-                    excuse.studentId.toLowerCase().includes(searchTerm);
-                
-                const matchesStatus = !statusFilter || excuse.status === statusFilter;
-                const matchesGrade = !gradeFilter || excuse.grade === gradeFilter;
-
-                return matchesSearch && matchesStatus && matchesGrade;
-            });
-        }
-
-        document.getElementById('searchFilter').addEventListener('input', () => {
-            displayExcuses(applyFilters());
-        });
-
-        document.getElementById('statusFilter').addEventListener('change', () => {
-            displayExcuses(applyFilters());
-        });
-
-        document.getElementById('gradeFilter').addEventListener('change', () => {
-            displayExcuses(applyFilters());
-        });
-
-        window.onclick = (event) => {
-            if (event.target.classList.contains('modal')) {
-                event.target.classList.remove('active');
-            }
-        };
-    </script>
-</body>
-</html>
-         
+                    <div class="
