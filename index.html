@@ -681,164 +681,113 @@
     </div>
 
     <script>
-        // ضع رابط Web App الخاص بك هنا
-        const API_URL = "https://script.google.com/macros/s/AKfycbyzLmNcvkJWG-0IUzXL4_omYaarctRfnlWx1dH5FR9Ko9oP3soELaue7Olx9AYzcoxEzg/exec';
+        // ✅ رابط Web App الصحيح بدون مسافات
+        const API_URL = 'https://script.google.com/macros/s/AKfycbyzLmNcvkJWG-0IUzXL4_omYaarctRfnlWx1dH5FR9Ko9oP3soELaue7Olx9AYzcoxEzg/exec';
+        
         let allExcuses = [];
         let currentExcuse = null;
 
-        // Login Handler
-document.getElementById('loginForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const username = document.getElementById('username').value.trim();
-    const password = document.getElementById('password').value.trim();
-    const loginAlert = document.getElementById('loginAlert');
-    const submitBtn = e.target.querySelector('button[type="submit"]');
+        // دالة تهريب HTML لتجنب XSS
+        function escapeHtml(text) {
+            if (typeof text !== 'string') return text;
+            return text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '<')
+                .replace(/>/g, '>')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
 
-    try {
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'جاري التحقق...';
-        loginAlert.style.display = 'none';
+        // تسجيل الدخول عبر الخادم
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const loginAlert = document.getElementById('loginAlert');
+            const submitBtn = e.target.querySelector('button[type="submit"]');
 
-        const response = await fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'adminLogin', username, password })
+            try {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'جاري التحقق...';
+                loginAlert.style.display = 'none';
+
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'adminLogin', username, password })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    sessionStorage.setItem('adminLoggedIn', 'true');
+                    document.getElementById('loginPage').style.display = 'none';
+                    document.getElementById('dashboard').classList.add('active');
+                    loadDashboard();
+                } else {
+                    loginAlert.textContent = result.message || 'اسم المستخدم أو كلمة المرور غير صحيحة';
+                    loginAlert.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('خطأ في تسجيل الدخول:', error);
+                loginAlert.textContent = 'فشل الاتصال بالخادم. تحقق من اتصالك بالإنترنت.';
+                loginAlert.style.display = 'block';
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'دخول';
+            }
         });
 
-        const result = await response.json();
-
-        if (result.success) {
-            sessionStorage.setItem('adminLoggedIn', 'true');
-            document.getElementById('loginPage').style.display = 'none';
-            document.getElementById('dashboard').classList.add('active');
-            loadDashboard();
-        } else {
-            loginAlert.textContent = result.message || 'اسم المستخدم أو كلمة المرور غير صحيحة';
-            loginAlert.style.display = 'block';
-        }
-    } catch (error) {
-        console.error('خطأ في تسجيل الدخول:', error);
-        loginAlert.textContent = 'فشل الاتصال بالخادم. تحقق من الرابط والاتصال.';
-        loginAlert.style.display = 'block';
-    } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'دخول';
-    }
-});
-
+        // تسجيل الخروج
         document.getElementById('logoutBtn').addEventListener('click', () => {
             sessionStorage.removeItem('adminLoggedIn');
             location.reload();
         });
 
+        // التحقق من تسجيل الدخول المسبق
         if (sessionStorage.getItem('adminLoggedIn') === 'true') {
             document.getElementById('loginPage').style.display = 'none';
             document.getElementById('dashboard').classList.add('active');
             loadDashboard();
         }
 
+        // تحميل لوحة التحكم من الخادم
         async function loadDashboard() {
             try {
-                await Promise.all([
-                    loadStatistics(),
-                    loadExcuses()
-                ]);
-            } catch (error) {
-                console.error('Error loading dashboard:', error);
-                alert('خطأ في تحميل البيانات. تحقق من رابط API');
-            }
-        }
-
-        async function loadStatistics() {
-            try {
-                const response = await fetch(API_URL, {
+                // تحميل الإحصائيات
+                const statsRes = await fetch(API_URL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ 
-                        action: 'getStatistics' 
-                    })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'getStatistics' })
                 });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    document.getElementById('totalCount').textContent = result.data.total;
-                    document.getElementById('pendingCount').textContent = result.data.pending;
-                    document.getElementById('approvedCount').textContent = result.data.approved;
-                    document.getElementById('rejectedCount').textContent = result.data.rejected;
+                const statsResult = await statsRes.json();
+                if (statsResult.success && statsResult.data) {
+                    document.getElementById('totalCount').textContent = statsResult.data.total || 0;
+                    document.getElementById('pendingCount').textContent = statsResult.data.pending || 0;
+                    document.getElementById('approvedCount').textContent = statsResult.data.approved || 0;
+                    document.getElementById('rejectedCount').textContent = statsResult.data.rejected || 0;
                 }
-            } catch (error) {
-                console.error('Error loading statistics:', error);
-            }
-        }
 
-        async function loadExcuses() {
-            try {
-                const response = await fetch(API_URL, {
+                // تحميل طلبات الاستئذان
+                const excusesRes = await fetch(API_URL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ 
-                        action: 'getAllExcuses' 
-                    })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'getAllExcuses' })
                 });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    allExcuses = result.data;
+                const excusesResult = await excusesRes.json();
+                if (excusesResult.success && excusesResult.data) {
+                    allExcuses = excusesResult.data;
                     populateGradeFilter();
                     displayExcuses(allExcuses);
-                } else {
-                    console.error('Error:', result.message);
                 }
             } catch (error) {
-                console.error('Error loading excuses:', error);
+                console.error('فشل تحميل لوحة التحكم:', error);
+                alert('فشل الاتصال بقاعدة البيانات. تأكد من اتصالك بالإنترنت.');
             }
         }
 
-   async function loadDashboard() {
-    try {
-        // تحميل الإحصائيات
-        const statsRes = await fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'getStatistics' })
-        });
-        const statsResult = await statsRes.json();
-        if (statsResult.success && statsResult.data) {
-            document.getElementById('totalCount').textContent = statsResult.data.total || 0;
-            document.getElementById('pendingCount').textContent = statsResult.data.pending || 0;
-            document.getElementById('approvedCount').textContent = statsResult.data.approved || 0;
-            document.getElementById('rejectedCount').textContent = statsResult.data.rejected || 0;
-        }
-
-        // تحميل طلبات الاستئذان
-        const excusesRes = await fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'getAllExcuses' })
-        });
-        const excusesResult = await excusesRes.json();
-        if (excusesResult.success && excusesResult.data) {
-            allExcuses = excusesResult.data;
-            populateGradeFilter();
-            displayExcuses(allExcuses);
-        }
-    } catch (error) {
-        console.error('فشل تحميل لوحة التحكم:', error);
-        alert('فشل الاتصال بقاعدة البيانات. تأكد من اتصالك بالإنترنت.');
-    }
-}
-        function updateStatsDisplay() {
-            // هذه الدالة لم تعد ضرورية لأننا نستخدم loadStatistics()
-            // لكن نتركها للتوافق
-        }
-
+        // ملء قائمة الصفوف
         function populateGradeFilter() {
             const grades = [...new Set(allExcuses.map(e => e.grade))];
             const gradeFilter = document.getElementById('gradeFilter');
@@ -852,6 +801,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
             });
         }
 
+        // عرض الطلبات في الجدول
         function displayExcuses(excuses) {
             const tbody = document.getElementById('excusesTableBody');
             
@@ -873,19 +823,20 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
                 const statusClass = excuse.status === 'قيد المراجعة' ? 'status-pending' : 
                                    excuse.status === 'مقبول' ? 'status-approved' : 'status-rejected';
                 
-                const excuseData = JSON.stringify(excuse).replace(/"/g, '&quot;');
+                // تحضير كائن للتمرير بأمان
+                const excuseData = JSON.stringify(excuse);
                 
                 return `
                     <tr>
-                        <td>${excuse.studentId}</td>
-                        <td>${excuse.studentName}</td>
-                        <td>${excuse.grade}</td>
-                        <td>${excuse.class}</td>
-                        <td>${excuse.excuseNumber}</td>
-                        <td>${excuse.excuseDate}</td>
-                        <td>${excuse.excuseTime}</td>
-                        <td>${excuse.reason.substring(0, 30)}${excuse.reason.length > 30 ? '...' : ''}</td>
-                        <td><span class="status-badge ${statusClass}">${excuse.status}</span></td>
+                        <td>${escapeHtml(excuse.studentId)}</td>
+                        <td>${escapeHtml(excuse.studentName)}</td>
+                        <td>${escapeHtml(excuse.grade)}</td>
+                        <td>${escapeHtml(excuse.class)}</td>
+                        <td>${escapeHtml(excuse.excuseNumber)}</td>
+                        <td>${escapeHtml(excuse.excuseDate)}</td>
+                        <td>${escapeHtml(excuse.excuseTime)}</td>
+                        <td>${escapeHtml(excuse.reason.substring(0, 30))}${excuse.reason.length > 30 ? '...' : ''}</td>
+                        <td><span class="status-badge ${statusClass}">${escapeHtml(excuse.status)}</span></td>
                         <td>
                             <div class="action-buttons">
                                 <button class="icon-btn btn-view" onclick='viewExcuse(${excuseData})'>👁️</button>
@@ -900,61 +851,94 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
             }).join('');
         }
 
+        // وظائف الفلترة
+        document.getElementById('searchFilter').addEventListener('input', () => {
+            const filtered = applyFilters();
+            displayExcuses(filtered);
+        });
+
+        document.getElementById('statusFilter').addEventListener('change', () => {
+            const filtered = applyFilters();
+            displayExcuses(filtered);
+        });
+
+        document.getElementById('gradeFilter').addEventListener('change', () => {
+            const filtered = applyFilters();
+            displayExcuses(filtered);
+        });
+
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchFilter').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            const gradeFilter = document.getElementById('gradeFilter').value;
+
+            return allExcuses.filter(excuse => {
+                const matchesSearch = !searchTerm || 
+                    excuse.studentName.toLowerCase().includes(searchTerm) ||
+                    excuse.studentId.toString().toLowerCase().includes(searchTerm);
+                
+                const matchesStatus = !statusFilter || excuse.status === statusFilter;
+                const matchesGrade = !gradeFilter || excuse.grade === gradeFilter;
+
+                return matchesSearch && matchesStatus && matchesGrade;
+            });
+        }
+
+        // وظائف المودال
         function viewExcuse(excuse) {
             const modalBody = document.getElementById('viewModalBody');
             modalBody.innerHTML = `
                 <div class="info-item">
                     <div class="info-item-label">👤 اسم الطالبة</div>
-                    <div class="info-item-value">${excuse.studentName}</div>
+                    <div class="info-item-value">${escapeHtml(excuse.studentName)}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-item-label">🆔 رقم الطالبة</div>
-                    <div class="info-item-value">${excuse.studentId}</div>
+                    <div class="info-item-value">${escapeHtml(excuse.studentId)}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-item-label">📚 الصف والفصل</div>
-                    <div class="info-item-value">${excuse.grade} - ${excuse.class}</div>
+                    <div class="info-item-value">${escapeHtml(excuse.grade)} - ${escapeHtml(excuse.class)}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-item-label">📅 تاريخ الاستئذان</div>
-                    <div class="info-item-value">${excuse.excuseDate}</div>
+                    <div class="info-item-value">${escapeHtml(excuse.excuseDate)}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-item-label">⏰ وقت الاستئذان</div>
-                    <div class="info-item-value">${excuse.excuseTime}</div>
+                    <div class="info-item-value">${escapeHtml(excuse.excuseTime)}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-item-label">📝 سبب الاستئذان</div>
-                    <div class="info-item-value">${excuse.reason}</div>
+                    <div class="info-item-value">${escapeHtml(excuse.reason)}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-item-label">🔢 رقم الاستئذان</div>
-                    <div class="info-item-value">${excuse.excuseNumber}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-item-label">📊 إجمالي الاستئذانات</div>
-                    <div class="info-item-value">${excuse.totalExcuses}</div>
+                    <div class="info-item-value">${escapeHtml(excuse.excuseNumber)}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-item-label">📱 رقم هاتف ولي الأمر</div>
-                    <div class="info-item-value">${excuse.senderPhone}</div>
+                    <div class="info-item-value">${escapeHtml(excuse.senderPhone)}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-item-label">🏷️ الحالة</div>
                     <div class="info-item-value">
-                        <span class="status-badge ${excuse.status === 'قيد المراجعة' ? 'status-pending' : excuse.status === 'مقبول' ? 'status-approved' : 'status-rejected'}">
-                            ${excuse.status}
+                        <span class="status-badge ${
+                            excuse.status === 'قيد المراجعة' ? 'status-pending' : 
+                            excuse.status === 'مقبول' ? 'status-approved' : 'status-rejected'
+                        }">
+                            ${escapeHtml(excuse.status)}
                         </span>
                     </div>
                 </div>
                 ${excuse.reply ? `
                     <div class="info-item">
                         <div class="info-item-label">💬 رد المديرة</div>
-                        <div class="info-item-value">${excuse.reply}</div>
+                        <div class="info-item-value">${escapeHtml(excuse.reply)}</div>
                     </div>
                     <div class="info-item">
                         <div class="info-item-label">📅 تاريخ الرد</div>
-                        <div class="info-item-value">${excuse.replyDate}</div>
+                        <div class="info-item-value">${escapeHtml(excuse.replyDate)}</div>
                     </div>
                 ` : ''}
             `;
@@ -968,15 +952,15 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
             infoDiv.innerHTML = `
                 <div class="info-item">
                     <div class="info-item-label">👤 اسم الطالبة</div>
-                    <div class="info-item-value">${excuse.studentName}</div>
+                    <div class="info-item-value">${escapeHtml(excuse.studentName)}</div>
                 </div>
                 <div class="info-item">
-                    <div class="info-item-label">📚 الصف</div>
-                    <div class="info-item-value">${excuse.grade} - ${excuse.class}</div>
+                    <div class="info-item-label">📚 الصف والفصل</div>
+                    <div class="info-item-value">${escapeHtml(excuse.grade)} - ${escapeHtml(excuse.class)}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-item-label">📝 سبب الاستئذان</div>
-                    <div class="info-item-value">${excuse.reason}</div>
+                    <div class="info-item-value">${escapeHtml(excuse.reason)}</div>
                 </div>
             `;
             document.getElementById('approveReply').value = '';
@@ -989,15 +973,15 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
             infoDiv.innerHTML = `
                 <div class="info-item">
                     <div class="info-item-label">👤 اسم الطالبة</div>
-                    <div class="info-item-value">${excuse.studentName}</div>
+                    <div class="info-item-value">${escapeHtml(excuse.studentName)}</div>
                 </div>
                 <div class="info-item">
-                    <div class="info-item-label">📚 الصف</div>
-                    <div class="info-item-value">${excuse.grade} - ${excuse.class}</div>
+                    <div class="info-item-label">📚 الصف والفصل</div>
+                    <div class="info-item-value">${escapeHtml(excuse.grade)} - ${escapeHtml(excuse.class)}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-item-label">📝 سبب الاستئذان</div>
-                    <div class="info-item-value">${excuse.reason}</div>
+                    <div class="info-item-value">${escapeHtml(excuse.reason)}</div>
                 </div>
             `;
             document.getElementById('rejectReply').value = '';
@@ -1008,115 +992,89 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
             document.getElementById(modalId).classList.remove('active');
         }
 
+        // الموافقة على الاستئذان
         document.getElementById('confirmApproveBtn').addEventListener('click', async () => {
-    const reply = document.getElementById('approveReply').value.trim();
-    if (!reply) {
-        alert('يرجى كتابة رد الموافقة');
-        return;
-    }
+            const reply = document.getElementById('approveReply').value.trim();
+            if (!reply) {
+                alert('يرجى كتابة رد الموافقة');
+                return;
+            }
 
-    const btn = document.getElementById('confirmApproveBtn');
-    btn.disabled = true;
-    btn.textContent = 'جاري المعالجة...';
+            const btn = document.getElementById('confirmApproveBtn');
+            btn.disabled = true;
+            btn.textContent = 'جاري المعالجة...';
 
-    try {
-        const response = await fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                action: 'updateExcuseStatus',
-                rowIndex: currentExcuse.rowIndex,
-                status: 'مقبول',
-                reply: reply
-            })
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'updateExcuseStatus',
+                        rowIndex: currentExcuse.rowIndex,
+                        status: 'مقبول',
+                        reply: reply
+                    })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    loadDashboard(); // إعادة التحميل بعد النجاح
+                    closeModal('approveModal');
+                    alert('✅ تم الموافقة على الاستئذان بنجاح');
+                } else {
+                    alert('❌ ' + (result.message || 'فشل في تحديث الحالة'));
+                }
+            } catch (error) {
+                console.error('خطأ:', error);
+                alert('فشل الاتصال بالخادم');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'تأكيد الموافقة';
+            }
         });
 
-        const result = await response.json();
-        if (result.success) {
-            // إعادة تحميل البيانات
-            loadDashboard();
-            closeModal('approveModal');
-            alert('✅ تم الموافقة على الاستئذان بنجاح');
-        } else {
-            alert('❌ ' + (result.message || 'فشل في تحديث الحالة'));
-        }
-    } catch (error) {
-        console.error('خطأ:', error);
-        alert('فشل الاتصال بالخادم');
-    } finally {
-        btn.disabled = false;
-        btn.textContent = 'تأكيد الموافقة';
-    }
-});
+        // رفض الاستئذان
+        document.getElementById('confirmRejectBtn').addEventListener('click', async () => {
+            const reply = document.getElementById('rejectReply').value.trim();
+            if (!reply) {
+                alert('يرجى كتابة سبب الرفض');
+                return;
+            }
 
-       document.getElementById('confirmRejectBtn').addEventListener('click', async () => {
-    const reply = document.getElementById('rejectReply').value.trim();
-    if (!reply) {
-        alert('يرجى كتابة سبب الرفض');
-        return;
-    }
+            const btn = document.getElementById('confirmRejectBtn');
+            btn.disabled = true;
+            btn.textContent = 'جاري المعالجة...';
 
-    const btn = document.getElementById('confirmRejectBtn');
-    btn.disabled = true;
-    btn.textContent = 'جاري المعالجة...';
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'updateExcuseStatus',
+                        rowIndex: currentExcuse.rowIndex,
+                        status: 'مرفوض',
+                        reply: reply
+                    })
+                });
 
-    try {
-        const response = await fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                action: 'updateExcuseStatus',
-                rowIndex: currentExcuse.rowIndex,
-                status: 'مرفوض',
-                reply: reply
-            })
+                const result = await response.json();
+                if (result.success) {
+                    loadDashboard();
+                    closeModal('rejectModal');
+                    alert('❌ تم رفض الاستئذان بنجاح');
+                } else {
+                    alert('❌ ' + (result.message || 'فشل في تحديث الحالة'));
+                }
+            } catch (error) {
+                console.error('خطأ:', error);
+                alert('فشل الاتصال بالخادم');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'تأكيد الرفض';
+            }
         });
 
-        const result = await response.json();
-        if (result.success) {
-            loadDashboard();
-            closeModal('rejectModal');
-            alert('❌ تم رفض الاستئذان بنجاح');
-        } else {
-            alert('❌ ' + (result.message || 'فشل في تحديث الحالة'));
-        }
-    } catch (error) {
-        console.error('خطأ:', error);
-        alert('فشل الاتصال بالخادم');
-    } finally {
-        btn.disabled = false;
-        btn.textContent = 'تأكيد الرفض';
-    }
-});
-        function applyFilters() {
-            const searchTerm = document.getElementById('searchFilter').value.toLowerCase();
-            const statusFilter = document.getElementById('statusFilter').value;
-            const gradeFilter = document.getElementById('gradeFilter').value;
-
-            return allExcuses.filter(excuse => {
-                const matchesSearch = !searchTerm || 
-                    excuse.studentName.toLowerCase().includes(searchTerm) ||
-                    excuse.studentId.toLowerCase().includes(searchTerm);
-                
-                const matchesStatus = !statusFilter || excuse.status === statusFilter;
-                const matchesGrade = !gradeFilter || excuse.grade === gradeFilter;
-
-                return matchesSearch && matchesStatus && matchesGrade;
-            });
-        }
-
-        document.getElementById('searchFilter').addEventListener('input', () => {
-            displayExcuses(applyFilters());
-        });
-
-        document.getElementById('statusFilter').addEventListener('change', () => {
-            displayExcuses(applyFilters());
-        });
-
-        document.getElementById('gradeFilter').addEventListener('change', () => {
-            displayExcuses(applyFilters());
-        });
-
+        // إغلاق المودال عند النقر خارجه
         window.onclick = (event) => {
             if (event.target.classList.contains('modal')) {
                 event.target.classList.remove('active');
