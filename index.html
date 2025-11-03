@@ -2,523 +2,529 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>نظام يُسر - لوحة تحكم المديرة</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>نظام يُسر - لوحة المديرة (صفحة واحدة)</title>
 
-  <!-- Bootstrap 5 CSS -->
+  <!-- Bootstrap 5 -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
 
   <style>
-    body { font-family: "Cairo", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background:#f6f7fb; }
-    .login-card { max-width:420px; margin:auto; margin-top:6vh; }
-    .table-wrap { max-height:60vh; overflow:auto; }
-    .cursor-pointer { cursor:pointer; }
-    .required { color:#d9534f; }
+    body { font-family: "Cairo", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background:#f3f6fb; }
+    .center-card { max-width:1100px; margin:28px auto; }
+    .hide { display:none !important; }
+    .status-badge { padding:6px 10px; border-radius:999px; font-weight:600; font-size:13px; display:inline-block; }
+    .status-pending { background:#fff4e5; color:#a65b00; border:1px solid #ffdca8; }
+    .status-approved { background:#e6ffef; color:#065f46; border:1px solid #b7f3d0; }
+    .status-rejected { background:#fff0f0; color:#9b1c1c; border:1px solid #f5c2c2; }
+    pre.debug { max-height:200px; overflow:auto; background:#00000009; padding:10px; border-radius:6px; }
   </style>
 </head>
 <body>
-  <div class="container py-4">
 
-    <!-- Login Card -->
-    <div id="loginCard" class="card login-card shadow-sm">
-      <div class="card-body">
-        <h4 class="card-title text-center mb-2">نظام يُسر</h4>
-        <p class="text-center text-muted mb-4">لوحة تحكم المديرة</p>
+<div class="container center-card">
 
-        <div id="loginAlert" class="alert alert-danger d-none" role="alert"></div>
-
-        <form id="loginForm" class="needs-validation" novalidate>
-          <div class="mb-3">
-            <label for="username" class="form-label">اسم المستخدم <span class="required">*</span></label>
-            <input id="username" class="form-control" required />
-          </div>
-
-          <div class="mb-3">
-            <label for="password" class="form-label">كلمة المرور <span class="required">*</span></label>
-            <input id="password" type="password" class="form-control" required />
-          </div>
-
-          <div class="d-grid">
-            <button id="loginBtn" class="btn btn-primary">دخول</button>
-          </div>
-        </form>
-
-        <hr />
-
-        <div class="text-center text-muted small">
-          اسم المستخدم التجريبي: <code>admin</code> — كلمة المرور: <code>yusur2025</code>
-        </div>
+  <!-- Header -->
+  <div class="card mb-3 shadow-sm">
+    <div class="card-body d-flex align-items-center gap-3">
+      <img src="" alt="logo" onerror="this.style.display='none'" style="width:76px;height:76px;border-radius:10px;object-fit:cover">
+      <div>
+        <h4 class="mb-0">نظام يُسر</h4>
+        <small class="text-muted">لوحة تحكم المديرة — صفحة واحدة (تسجيل دخول + إدارة الطلبات)</small>
       </div>
     </div>
-
-    <!-- Dashboard -->
-    <div id="dashboard" class="d-none">
-
-      <nav class="navbar navbar-expand-lg navbar-dark bg-primary rounded-3 mb-3">
-        <div class="container-fluid">
-          <span class="navbar-brand mb-0 h1">👩‍💼 لوحة تحكم المديرة - نظام يُسر</span>
-          <div class="d-flex gap-2">
-            <button id="refreshBtn" class="btn btn-light btn-sm">تحديث</button>
-            <button id="logoutBtn" class="btn btn-outline-light btn-sm">تسجيل خروج</button>
-          </div>
-        </div>
-      </nav>
-
-      <div class="row mb-3">
-        <div class="col-md-3 mb-2">
-          <div class="card p-3 shadow-sm">
-            <div class="text-muted">إجمالي الطلبات</div>
-            <div id="totalCount" class="h4 m-0">0</div>
-          </div>
-        </div>
-        <div class="col-md-3 mb-2">
-          <div class="card p-3 shadow-sm">
-            <div class="text-muted">قيد المراجعة</div>
-            <div id="pendingCount" class="h4 m-0">0</div>
-          </div>
-        </div>
-        <div class="col-md-3 mb-2">
-          <div class="card p-3 shadow-sm">
-            <div class="text-muted">مقبول</div>
-            <div id="approvedCount" class="h4 m-0">0</div>
-          </div>
-        </div>
-        <div class="col-md-3 mb-2">
-          <div class="card p-3 shadow-sm">
-            <div class="text-muted">مرفوض</div>
-            <div id="rejectedCount" class="h4 m-0">0</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card mb-3 shadow-sm">
-        <div class="card-body">
-          <div class="row g-2">
-            <div class="col-md-4">
-              <input id="searchInput" class="form-control" placeholder="ابحث بالاسم أو رقم الطالبة..." />
-            </div>
-            <div class="col-md-3">
-              <select id="statusFilter" class="form-select">
-                <option value="">كل الحالات</option>
-                <option value="قيد المراجعة">قيد المراجعة</option>
-                <option value="مقبول">مقبول</option>
-                <option value="مرفوض">مرفوض</option>
-              </select>
-            </div>
-            <div class="col-md-3">
-              <select id="gradeFilter" class="form-select">
-                <option value="">كل الصفوف</option>
-              </select>
-            </div>
-            <div class="col-md-2 text-end">
-              <button id="demoBtn" class="btn btn-outline-secondary">بيانات تجريبية</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card shadow-sm">
-        <div class="card-body table-wrap">
-          <table class="table table-striped table-hover align-middle">
-            <thead class="table-primary">
-              <tr>
-                <th>رقم الطالبة</th>
-                <th>اسم الطالبة</th>
-                <th>الصف</th>
-                <th>الفصل</th>
-                <th>رقم الاستئذان</th>
-                <th>التاريخ</th>
-                <th>الوقت</th>
-                <th>السبب</th>
-                <th>الحالة</th>
-                <th>إجراءات</th>
-              </tr>
-            </thead>
-            <tbody id="excusesBody">
-              <tr><td colspan="10" class="text-center text-muted">لا توجد طلبات</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- View Modal -->
-    <div class="modal fade" id="viewModal" tabindex="-1">
-      <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content">
-          <div class="modal-header bg-primary text-white">
-            <h5 class="modal-title">تفاصيل الاستئذان</h5>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-          </div>
-          <div class="modal-body" id="viewModalBody"></div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Approve/Reject Modal -->
-    <div class="modal fade" id="actionModal" tabindex="-1">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header bg-primary text-white">
-            <h5 id="actionModalTitle" class="modal-title">تأكيد</h5>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-          </div>
-          <div class="modal-body">
-            <div id="actionInfo" class="mb-3"></div>
-            <div class="mb-2">
-              <label class="form-label">ملاحظات / رد المديرة <span class="required">*</span></label>
-              <textarea id="actionReply" class="form-control" rows="4" placeholder="اكتب ملاحظات المديرة..."></textarea>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button id="actionCancel" type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-            <button id="actionConfirm" type="button" class="btn btn-success">تأكيد</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
   </div>
 
-  <!-- Bootstrap 5 JS + Popper -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Login Card -->
+  <div id="loginCard" class="card shadow-sm mb-3">
+    <div class="card-body">
+      <h5 class="card-title">تسجيل دخول المديرة</h5>
 
-  <script>
-    /**
-     * غيّر هنا إلى رابط Web App (Google Apps Script) الخاص بك
-     * مثال: 'https://script.google.com/macros/s/AKfycbxxxxx/exec'
-     */
-    const API_URL = 'https://script.google.com/macros/s/AKfycbzBvleOrrpqR6YDn_Wq-jOCqdXE5tI93erJlMBqbZGEvjqxdF1IY40TxBkF9_At6jzCsw/exec';
+      <div id="loginAlert" class="alert alert-danger d-none" role="alert"></div>
 
-    // DOM
-    const loginCard = document.getElementById('loginCard');
-    const loginForm = document.getElementById('loginForm');
-    const loginAlert = document.getElementById('loginAlert');
-    const loginBtn = document.getElementById('loginBtn');
+      <form id="loginForm" class="row g-3">
+        <div class="col-12 col-md-6">
+          <label class="form-label">اسم المستخدم</label>
+          <input id="loginUsername" class="form-control" autocomplete="username" required value="admin">
+        </div>
 
-    const dashboard = document.getElementById('dashboard');
-    const logoutBtn = document.getElementById('logoutBtn');
-    const refreshBtn = document.getElementById('refreshBtn');
-    const demoBtn = document.getElementById('demoBtn');
+        <div class="col-12 col-md-6">
+          <label class="form-label">كلمة المرور</label>
+          <input id="loginPassword" type="password" class="form-control" autocomplete="current-password" required value="yusur2025">
+        </div>
 
-    const totalCount = document.getElementById('totalCount');
-    const pendingCount = document.getElementById('pendingCount');
-    const approvedCount = document.getElementById('approvedCount');
-    const rejectedCount = document.getElementById('rejectedCount');
+        <div class="col-12 d-flex gap-2">
+          <button id="loginBtn" class="btn btn-primary">دخول</button>
+          <button id="demoBtn" type="button" class="btn btn-outline-secondary">تجربة بيانات توضيحية</button>
+          <div class="ms-auto">
+            <small class="text-muted">ادخل بيانات الاعتماد ثم اضغط "دخول"</small>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
 
-    const excusesBody = document.getElementById('excusesBody');
-    const searchInput = document.getElementById('searchInput');
-    const statusFilter = document.getElementById('statusFilter');
-    const gradeFilter = document.getElementById('gradeFilter');
+  <!-- Dashboard Card -->
+  <div id="dashboardCard" class="card shadow-sm hide">
+    <div class="card-body">
+      <div class="d-flex align-items-start mb-3 gap-3">
+        <div>
+          <h5 class="mb-0">لوحة المديرة</h5>
+          <small class="text-muted">استعراض وتحديث حالات طلبات الاستئذان</small>
+        </div>
+        <div class="ms-auto d-flex gap-2">
+          <button id="refreshBtn" class="btn btn-outline-primary btn-sm">🔄 تحديث</button>
+          <button id="logoutBtn" class="btn btn-outline-danger btn-sm">تسجيل خروج</button>
+        </div>
+      </div>
 
-    // modals
-    const viewModal = new bootstrap.Modal(document.getElementById('viewModal'));
-    const actionModalEl = document.getElementById('actionModal');
-    const actionModal = new bootstrap.Modal(actionModalEl);
-    const actionModalTitle = document.getElementById('actionModalTitle');
-    const actionInfo = document.getElementById('actionInfo');
-    const actionReply = document.getElementById('actionReply');
-    const actionConfirm = document.getElementById('actionConfirm');
+      <!-- stats -->
+      <div class="row g-2 mb-3">
+        <div class="col-6 col-md-3">
+          <div class="border rounded p-2 text-center bg-white">
+            <div class="text-muted small">إجمالي الطلبات</div>
+            <div id="statTotal" class="fw-bold fs-4">0</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="border rounded p-2 text-center bg-white">
+            <div class="text-muted small">قيد المراجعة</div>
+            <div id="statPending" class="fw-bold fs-4 text-warning">0</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="border rounded p-2 text-center bg-white">
+            <div class="text-muted small">مقبول</div>
+            <div id="statApproved" class="fw-bold fs-4 text-success">0</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="border rounded p-2 text-center bg-white">
+            <div class="text-muted small">مرفوض</div>
+            <div id="statRejected" class="fw-bold fs-4 text-danger">0</div>
+          </div>
+        </div>
+      </div>
 
-    // state
-    let allExcuses = [];
-    let currentAction = null; // { type: 'approve'|'reject', excuse: {...} }
+      <!-- filters -->
+      <div class="row g-2 align-items-center mb-3">
+        <div class="col-12 col-md-4">
+          <input id="searchInput" class="form-control" placeholder="ابحث بالاسم أو رقم الطالبة أو رقم الاستئذان">
+        </div>
+        <div class="col-6 col-md-3">
+          <select id="statusFilter" class="form-select">
+            <option value="">كل الحالات</option>
+            <option value="قيد المراجعة">قيد المراجعة</option>
+            <option value="مقبول">مقبول</option>
+            <option value="مرفوض">مرفوض</option>
+          </select>
+        </div>
+        <div class="col-6 col-md-3">
+          <select id="gradeFilter" class="form-select">
+            <option value="">كل الصفوف</option>
+          </select>
+        </div>
+        <div class="col-12 col-md-2 text-start">
+          <small id="lastUpdated" class="text-muted"></small>
+        </div>
+      </div>
 
-    // ---- Helper: call API ----
-    async function callApi(payload) {
-      try {
-        const res = await fetch(API_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        const json = await res.json();
-        return json;
-      } catch (err) {
-        console.error('API call error', err);
-        return { success: false, message: 'خطأ في الاتصال بـ API' };
-      }
-    }
+      <!-- table -->
+      <div class="table-responsive mb-3">
+        <table class="table table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>رقم الطالبة</th>
+              <th>الاسم</th>
+              <th>الصف</th>
+              <th>الفصل</th>
+              <th>رقم الاستئذان</th>
+              <th>التاريخ</th>
+              <th>الوقت</th>
+              <th>السبب</th>
+              <th>الحالة</th>
+              <th>إجراءات</th>
+            </tr>
+          </thead>
+          <tbody id="excusesTbody">
+            <tr><td colspan="10" class="text-center text-muted py-4">لا توجد طلبات</td></tr>
+          </tbody>
+        </table>
+      </div>
 
-    // ---- Login ----
-    loginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      loginAlert.classList.add('d-none');
+      <div id="actionAlert" class="alert d-none" role="alert"></div>
 
-      const username = document.getElementById('username').value.trim();
-      const password = document.getElementById('password').value.trim();
+      <!-- modal view / approve / reject -->
+      <div class="modal fade" id="excuseModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 id="modalTitle" class="modal-title">تفاصيل الاستئذان</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+            </div>
+            <div class="modal-body">
+              <div id="modalBodyContent"></div>
 
-      if (!username || !password) {
-        loginAlert.textContent = 'أدخل اسم المستخدم وكلمة المرور';
-        loginAlert.classList.remove('d-none');
-        return;
-      }
-
-      loginBtn.disabled = true;
-      loginBtn.textContent = 'جاري التحقق...';
-
-      const result = await callApi({ action: 'adminLogin', username, password });
-
-      loginBtn.disabled = false;
-      loginBtn.textContent = 'دخول';
-
-      if (result.success) {
-        sessionStorage.setItem('adminLoggedIn', 'true');
-        loginCard.classList.add('d-none');
-        dashboard.classList.remove('d-none');
-        await loadAllData();
-      } else {
-        loginAlert.textContent = result.message || 'اسم المستخدم أو كلمة المرور غير صحيحة';
-        loginAlert.classList.remove('d-none');
-      }
-    });
-
-    // if already logged
-    if (sessionStorage.getItem('adminLoggedIn') === 'true') {
-      loginCard.classList.add('d-none');
-      dashboard.classList.remove('d-none');
-      loadAllData().catch(()=>{});
-    }
-
-    // ---- Load data ----
-    async function loadAllData() {
-      await Promise.all([loadStatistics(), loadExcuses()]);
-    }
-
-    async function loadStatistics() {
-      const res = await callApi({ action: 'getStatistics' });
-      if (res.success) {
-        totalCount.textContent = res.data.total;
-        pendingCount.textContent = res.data.pending;
-        approvedCount.textContent = res.data.approved;
-        rejectedCount.textContent = res.data.rejected;
-      }
-    }
-
-    async function loadExcuses() {
-      const res = await callApi({ action: 'getAllExcuses' });
-      if (!res.success) {
-        alert(res.message || 'فشل جلب الطلبات');
-        return;
-      }
-      allExcuses = res.data || [];
-      populateGradeFilter();
-      renderTable(allExcuses);
-    }
-
-    function populateGradeFilter() {
-      const grades = Array.from(new Set(allExcuses.map(i => i.grade).filter(Boolean)));
-      gradeFilter.innerHTML = '<option value="">كل الصفوف</option>';
-      grades.forEach(g => {
-        const opt = document.createElement('option');
-        opt.value = g; opt.textContent = g;
-        gradeFilter.appendChild(opt);
-      });
-    }
-
-    // ---- Render table ----
-    function renderTable(list) {
-      if (!list || list.length === 0) {
-        excusesBody.innerHTML = '<tr><td colspan="10" class="text-center text-muted">لا توجد طلبات</td></tr>';
-        return;
-      }
-
-      excusesBody.innerHTML = list.map(excuse => {
-        const statusBadge = excuse.status === 'قيد المراجعة' ? 'badge bg-warning text-dark' :
-                            excuse.status === 'مقبول' ? 'badge bg-success' : 'badge bg-danger';
-
-        // protect quotes in JSON for inline handlers
-        const json = JSON.stringify(excuse).replace(/"/g, '&quot;');
-
-        return `
-          <tr>
-            <td>${escapeHtml(excuse.studentId || '')}</td>
-            <td>${escapeHtml(excuse.studentName || '')}</td>
-            <td>${escapeHtml(excuse.grade || '')}</td>
-            <td>${escapeHtml(excuse.class || '')}</td>
-            <td>${escapeHtml('' + (excuse.excuseNumber ?? ''))}</td>
-            <td>${escapeHtml(excuse.excuseDate || '')}</td>
-            <td>${escapeHtml(excuse.excuseTime || '')}</td>
-            <td title="${escapeHtml(excuse.reason || '')}">${escapeHtml((excuse.reason || '').substring(0,30))}${(excuse.reason||'').length>30? '...':''}</td>
-            <td><span class="${statusBadge}">${escapeHtml(excuse.status || '')}</span></td>
-            <td>
-              <div class="btn-group" role="group" aria-label="actions">
-                <button class="btn btn-sm btn-outline-primary" onclick='view(${json})'>عرض</button>
-                ${(excuse.status === 'قيد المراجعة') ? `
-                  <button class="btn btn-sm btn-success" onclick='startAction("approve", ${json})'>موافقة</button>
-                  <button class="btn btn-sm btn-danger" onclick='startAction("reject", ${json})'>رفض</button>
-                ` : ''}
+              <div id="modalReplyGroup" class="mt-3 hide">
+                <label class="form-label">ملاحظات/رد المديرة</label>
+                <textarea id="modalReply" class="form-control" rows="3" placeholder="اكتب ملاحظات (ضروري عند الموافقة أو الرفض)"></textarea>
               </div>
-            </td>
-          </tr>
-        `;
-      }).join('');
-    }
+            </div>
+            <div class="modal-footer">
+              <button id="modalRejectBtn" type="button" class="btn btn-danger">رفض</button>
+              <button id="modalApproveBtn" type="button" class="btn btn-success">موافقة</button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+            </div>
+          </div>
+        </div>
+      </div>
 
-    // escape helper
-    function escapeHtml(text) {
-      if (text === null || text === undefined) return '';
-      return String(text)
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#39;');
-    }
+    </div>
+  </div>
 
-    // ---- View single excuse ----
-    function view(excuse) {
-      const body = document.getElementById('viewModalBody');
-      body.innerHTML = `
-        <div class="mb-2"><strong>الاسم:</strong> ${escapeHtml(excuse.studentName||'')}</div>
-        <div class="mb-2"><strong>رقم الطالبة:</strong> ${escapeHtml(excuse.studentId||'')}</div>
-        <div class="mb-2"><strong>الصف/الفصل:</strong> ${escapeHtml(excuse.grade||'')} / ${escapeHtml(excuse.class||'')}</div>
-        <div class="mb-2"><strong>تاريخ الاستئذان:</strong> ${escapeHtml(excuse.excuseDate||'')}</div>
-        <div class="mb-2"><strong>وقت الاستئذان:</strong> ${escapeHtml(excuse.excuseTime||'')}</div>
-        <div class="mb-2"><strong>السبب:</strong><br/> ${escapeHtml(excuse.reason||'')}</div>
-        <div class="mb-2"><strong>حالة الإرسال (WhatsApp):</strong> ${escapeHtml(excuse.whatsappStatus||'')}</div>
-        ${excuse.reply ? `<div class="mb-2"><strong>رد المديرة:</strong><br/> ${escapeHtml(excuse.reply)}</div>` : ''}
-        ${excuse.replyDate ? `<div class="mb-2"><strong>تاريخ الرد:</strong> ${escapeHtml(excuse.replyDate)}</div>` : ''}
-      `;
-      viewModal.show();
-    }
+  <!-- debug area (hidden by default) -->
+  <div id="debugBox" class="mt-3 d-none">
+    <h6>Debug</h6>
+    <pre id="debugPre" class="debug"></pre>
+  </div>
 
-    // ---- Start approve/reject flow ----
-    function startAction(type, excuse) {
-      currentAction = { type, excuse };
-      actionReply.value = '';
-      actionInfo.innerHTML = `
-        <div><strong>الاسم:</strong> ${escapeHtml(excuse.studentName||'')}</div>
-        <div><strong>رقم الطالبة:</strong> ${escapeHtml(excuse.studentId||'')}</div>
-        <div><strong>الصف/الفصل:</strong> ${escapeHtml(excuse.grade||'')} / ${escapeHtml(excuse.class||'')}</div>
-        <div><strong>السبب:</strong> ${escapeHtml((excuse.reason||'').substring(0,200))}</div>
-      `;
-      actionModalTitle.textContent = (type === 'approve') ? 'تأكيد الموافقة' : 'تأكيد الرفض';
-      actionConfirm.classList.toggle('btn-success', type === 'approve');
-      actionConfirm.classList.toggle('btn-danger', type === 'reject');
-      actionConfirm.textContent = (type === 'approve') ? 'تأكيد الموافقة' : 'تأكيد الرفض';
-      actionModal.show();
-    }
+</div>
 
-    // ---- Confirm approve/reject ----
-    actionConfirm.addEventListener('click', async () => {
-      const reply = actionReply.value.trim();
-      if (!reply) {
-        alert('يرجى كتابة ملاحظات المديرة قبل التأكيد.');
-        return;
-      }
+<!-- Bootstrap & dependencies -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-      if (!currentAction || !currentAction.excuse) return;
+<script>
+/*
+  ملاحظة مهمة: ضع هنا رابط Web App URL (نُشر كـ "Anyone, even anonymous" أو بما يتماشى مع إعداداتك)
+  مثال: const API_URL = 'https://script.google.com/macros/s/AKfycb.../exec';
+*/
+const API_URL = 'https://script.google.com/macros/s/AKfycbzBvleOrrpqR6YDn_Wq-jOCqdXE5tI93erJlMBqbZGEvjqxdF1IY40TxBkF9_At6jzCsw/exec'; // <-- غيّر هذا إلى رابط الويب آب الخاص بك
 
-      const rowIndex = currentAction.excuse.rowIndex;
-      const status = currentAction.type === 'approve' ? 'مقبول' : 'مرفوض';
+// عناصر DOM
+const loginCard = document.getElementById('loginCard');
+const dashboardCard = document.getElementById('dashboardCard');
+const loginForm = document.getElementById('loginForm');
+const loginBtn = document.getElementById('loginBtn');
+const demoBtn = document.getElementById('demoBtn');
+const loginAlert = document.getElementById('loginAlert');
 
-      // disable button
-      actionConfirm.disabled = true;
-      actionConfirm.textContent = 'جاري التحديث...';
+const logoutBtn = document.getElementById('logoutBtn');
+const refreshBtn = document.getElementById('refreshBtn');
+const excusesTbody = document.getElementById('excusesTbody');
+const statTotal = document.getElementById('statTotal');
+const statPending = document.getElementById('statPending');
+const statApproved = document.getElementById('statApproved');
+const statRejected = document.getElementById('statRejected');
+const searchInput = document.getElementById('searchInput');
+const statusFilter = document.getElementById('statusFilter');
+const gradeFilter = document.getElementById('gradeFilter');
+const lastUpdated = document.getElementById('lastUpdated');
+const actionAlert = document.getElementById('actionAlert');
 
-      // call API to update sheet
-      const res = await callApi({
-        action: 'updateExcuseStatus',
-        rowIndex: rowIndex,
-        status: status,
-        reply: reply
-      });
+const excuseModal = new bootstrap.Modal(document.getElementById('excuseModal'));
+const modalTitle = document.getElementById('modalTitle');
+const modalBodyContent = document.getElementById('modalBodyContent');
+const modalReplyGroup = document.getElementById('modalReplyGroup');
+const modalReply = document.getElementById('modalReply');
+const modalApproveBtn = document.getElementById('modalApproveBtn');
+const modalRejectBtn = document.getElementById('modalRejectBtn');
 
-      actionConfirm.disabled = false;
-      actionConfirm.textContent = (currentAction.type === 'approve') ? 'تأكيد الموافقة' : 'تأكيد الرفض';
+let allExcuses = [];
+let currentExcuse = null;
 
-      if (res.success) {
-        // update UI local copy (refresh from server is safer but to be snappy update locally then reload)
-        const idx = allExcuses.findIndex(e => e.rowIndex === rowIndex);
-        if (idx !== -1) {
-          allExcuses[idx].status = status;
-          allExcuses[idx].reply = reply;
-          // set replyDate to now (formatted)
-          allExcuses[idx].replyDate = new Date().toLocaleString('ar-EG');
-        }
+// Helpers
+function showLoginError(msg) {
+  loginAlert.textContent = msg;
+  loginAlert.classList.remove('d-none');
+}
+function hideLoginError() {
+  loginAlert.classList.add('d-none');
+}
+function showActionAlert(msg, type='success') {
+  actionAlert.className = 'alert';
+  actionAlert.classList.add(type === 'success' ? 'alert-success' : 'alert-danger');
+  actionAlert.textContent = msg;
+  actionAlert.classList.remove('d-none');
+  setTimeout(() => actionAlert.classList.add('d-none'), 4000);
+}
+function debug(obj) {
+  // uncomment if you need debug area
+  // document.getElementById('debugPre').textContent = JSON.stringify(obj, null, 2);
+  // document.getElementById('debugBox').classList.remove('d-none');
+}
 
-        renderTable(applyFilters());
-        await loadStatistics();
-        actionModal.hide();
-        alert('تم تحديث الحالة بنجاح');
-      } else {
-        alert('فشل التحديث: ' + (res.message || 'خطأ غير معروف'));
-      }
-    });
+// Fetch wrapper
+async function apiPost(payload) {
+  if (!API_URL || API_URL.includes('https://script.google.com/macros/s/AKfycbzBvleOrrpqR6YDn_Wq-jOCqdXE5tI93erJlMBqbZGEvjqxdF1IY40TxBkF9_At6jzCsw/exec')) {
+    throw new Error('API_URL غير مُعد — ضع رابط الويب آب في الكود (API_URL).');
+  }
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  return res.json();
+}
 
-    // ---- Filters & helpers ----
-    function applyFilters() {
-      const search = (searchInput.value || '').trim().toLowerCase();
-      const status = statusFilter.value;
-      const grade = gradeFilter.value;
+// Login action
+loginForm.addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  hideLoginError();
+  loginBtn.disabled = true;
+  loginBtn.textContent = 'جاري التحقق...';
 
-      return allExcuses.filter(e => {
-        const matchesSearch = !search ||
-          (e.studentName && e.studentName.toLowerCase().includes(search)) ||
-          (e.studentId && (''+e.studentId).toLowerCase().includes(search));
+  const username = document.getElementById('loginUsername').value.trim();
+  const password = document.getElementById('loginPassword').value.trim();
 
-        const matchesStatus = !status || e.status === status;
-        const matchesGrade = !grade || e.grade === grade;
-
-        return matchesSearch && matchesStatus && matchesGrade;
-      });
-    }
-
-    searchInput.addEventListener('input', () => {
-      renderTable(applyFilters());
-    });
-
-    statusFilter.addEventListener('change', () => {
-      renderTable(applyFilters());
-    });
-
-    gradeFilter.addEventListener('change', () => {
-      renderTable(applyFilters());
-    });
-
-    refreshBtn.addEventListener('click', async () => {
+  try {
+    const result = await apiPost({ action: 'adminLogin', username, password });
+    if (result && result.success) {
+      // show dashboard
+      loginCard.classList.add('hide');
+      dashboardCard.classList.remove('hide');
       await loadAllData();
-    });
+    } else {
+      showLoginError(result.message || 'فشل التحقق — تأكد من اسم المستخدم وكلمة المرور');
+    }
+  } catch (err) {
+    showLoginError('خطأ في الاتصال بالـ API — تأكد من رابط الويب آب وإعداداته. ' + (err.message || ''));
+  } finally {
+    loginBtn.disabled = false;
+    loginBtn.textContent = 'دخول';
+  }
+});
 
-    logoutBtn.addEventListener('click', () => {
-      sessionStorage.removeItem('adminLoggedIn');
-      location.reload();
-    });
+// demo data button (local demo)
+demoBtn.addEventListener('click', () => {
+  loginCard.classList.add('hide');
+  dashboardCard.classList.remove('hide');
+  loadDemoData();
+});
 
-    // demo data for testing without API
-    demoBtn.addEventListener('click', () => {
-      allExcuses = [
-        {
-          rowIndex: 2, studentId: '2024001', studentName: 'نورة أحمد', grade: 'الأول الثانوي', class: 'أ',
-          excuseNumber: 1, excuseDate: '2025-11-05', excuseTime: '09:00', reason: 'موعد طبي', status: 'قيد المراجعة', whatsappStatus: 'لم يتم الإرسال', reply:'', replyDate:'', totalExcuses:1
-        },
-        {
-          rowIndex: 3, studentId: '2024002', studentName: 'سارة محمد', grade: 'الثاني الثانوي', class: 'ب',
-          excuseNumber: 2, excuseDate: '2025-11-04', excuseTime: '10:30', reason: 'ظرف عائلي', status: 'مقبول', whatsappStatus: 'تم الإرسال', reply:'تم الموافقة', replyDate:'2025-11-03 14:30', totalExcuses:2
-        }
-      ];
-      populateGradeFilter();
-      renderTable(allExcuses);
-      loadStatistics();
-    });
+// Logout
+logoutBtn.addEventListener('click', () => {
+  dashboardCard.classList.add('hide');
+  loginCard.classList.remove('hide');
+});
 
-    // small utility: if API unreachable show message
-    (async function checkApi() {
-      // optional quick ping (non-blocking)
-      try {
-        const res = await callApi({ action: 'getStatistics' });
-        if (!res.success) {
-          console.warn('API ping failed:', res.message);
-        }
-      } catch (e) {
-        console.warn('API ping error', e);
-      }
-    })();
+// Refresh
+refreshBtn.addEventListener('click', loadAllData);
 
-  </script>
+// Search / filters
+searchInput.addEventListener('input', () => renderTable(getFilteredExcuses()));
+statusFilter.addEventListener('change', () => renderTable(getFilteredExcuses()));
+gradeFilter.addEventListener('change', () => renderTable(getFilteredExcuses()));
+
+// Load all data
+async function loadAllData() {
+  try {
+    const resp = await apiPost({ action: 'getAllExcuses' });
+    if (!resp || !resp.success) {
+      throw new Error(resp ? resp.message : 'لم يتم الحصول على البيانات');
+    }
+    allExcuses = resp.data || [];
+    populateGradeFilter();
+    renderTable(allExcuses);
+    updateStats();
+    lastUpdated.textContent = 'آخر تحديث: ' + new Date().toLocaleString('ar-EG');
+  } catch (err) {
+    showActionAlert('خطأ في جلب البيانات: ' + (err.message || ''), 'danger');
+    // fall back: keep previous data
+  }
+}
+
+function loadDemoData() {
+  allExcuses = [
+    { rowIndex:2, studentId:'2024001', studentName:'نورة أحمد', grade:'الأول الثانوي', class:'أ', civilId:'1234567890', senderPhone:'+966500111222', excuseNumber:1, excuseDate:'2025-11-05', excuseTime:'09:00', reason:'موعد طبي', status:'قيد المراجعة', reply:'', replyDate:'', whatsappStatus:'لم يتم الإرسال', totalExcuses:1 },
+    { rowIndex:3, studentId:'2024002', studentName:'سارة محمد', grade:'الثاني الثانوي', class:'ب', civilId:'9876543210', senderPhone:'+201001234567', excuseNumber:2, excuseDate:'2025-11-04', excuseTime:'10:30', reason:'ظرف عائلي', status:'مقبول', reply:'تمت الموافقة', replyDate:'2025-11-03 14:30:00', whatsappStatus:'تم الإرسال', totalExcuses:2 }
+  ];
+  populateGradeFilter();
+  renderTable(allExcuses);
+  updateStats();
+  lastUpdated.textContent = 'بيانات توضيحية';
+}
+
+// create table rows
+function renderTable(data) {
+  const arr = data || [];
+  if (!arr.length) {
+    excusesTbody.innerHTML = '<tr><td colspan="10" class="text-center text-muted py-4">لا توجد طلبات</td></tr>';
+    return;
+  }
+
+  excusesTbody.innerHTML = arr.map(ex => {
+    const statusClass = ex.status === 'قيد المراجعة' ? 'status-pending' : (ex.status === 'مقبول' ? 'status-approved' : 'status-rejected');
+    const shortReason = ex.reason ? (ex.reason.length > 30 ? ex.reason.slice(0,30) + '...' : ex.reason) : '';
+    // escape values for onclick JSON
+    const payload = encodeURIComponent(JSON.stringify(ex));
+    return `
+      <tr>
+        <td>${escapeHtml(ex.studentId || '')}</td>
+        <td>${escapeHtml(ex.studentName || '')}</td>
+        <td>${escapeHtml(ex.grade || '')}</td>
+        <td>${escapeHtml(ex.class || '')}</td>
+        <td>${escapeHtml(String(ex.excuseNumber || ''))}</td>
+        <td>${escapeHtml(ex.excuseDate || '')}</td>
+        <td>${escapeHtml(ex.excuseTime || '')}</td>
+        <td title="${escapeHtml(ex.reason || '')}">${escapeHtml(shortReason)}</td>
+        <td><span class="status-badge ${statusClass}">${escapeHtml(ex.status || '')}</span></td>
+        <td>
+          <div class="btn-group" role="group" aria-label="actions">
+            <button class="btn btn-sm btn-outline-primary" onclick="onViewClick('${payload}')">عرض</button>
+            ${ex.status === 'قيد المراجعة' ? `<button class="btn btn-sm btn-success" onclick="onApproveClick('${payload}')">✅</button>
+            <button class="btn btn-sm btn-danger" onclick="onRejectClick('${payload}')">❌</button>` : ''}
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// helpers for escaping
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;');
+}
+
+// filters
+function getFilteredExcuses() {
+  const s = (searchInput.value || '').trim().toLowerCase();
+  const status = statusFilter.value;
+  const grade = gradeFilter.value;
+  return allExcuses.filter(ex => {
+    let match = true;
+    if (s) {
+      match = (String(ex.studentName||'').toLowerCase().includes(s) ||
+               String(ex.studentId||'').toLowerCase().includes(s) ||
+               String(ex.excuseNumber||'').toLowerCase().includes(s) );
+    }
+    if (match && status) match = ex.status === status;
+    if (match && grade) match = ex.grade === grade;
+    return match;
+  });
+}
+
+// populate grade filter
+function populateGradeFilter() {
+  const set = new Set(allExcuses.map(e => e.grade).filter(Boolean));
+  gradeFilter.innerHTML = '<option value="">كل الصفوف</option>' + Array.from(set).map(g => `<option value="${escapeHtml(g)}">${escapeHtml(g)}</option>`).join('');
+}
+
+// update stats
+function updateStats() {
+  statTotal.textContent = allExcuses.length;
+  statPending.textContent = allExcuses.filter(e => e.status === 'قيد المراجعة').length;
+  statApproved.textContent = allExcuses.filter(e => e.status === 'مقبول').length;
+  statRejected.textContent = allExcuses.filter(e => e.status === 'مرفوض').length;
+}
+
+// modal actions
+window.onViewClick = function(payloadEncoded) {
+  const ex = JSON.parse(decodeURIComponent(payloadEncoded));
+  currentExcuse = ex;
+  modalTitle.textContent = `استئذان رقم ${ex.excuseNumber} — ${ex.studentName}`;
+  modalBodyContent.innerHTML = getModalContentHtml(ex);
+  modalReply.value = ex.reply || '';
+  modalReplyGroup.classList.add('hide');
+  modalApproveBtn.classList.remove('d-none');
+  modalRejectBtn.classList.remove('d-none');
+  excuseModal.show();
+};
+
+window.onApproveClick = function(payloadEncoded) {
+  const ex = JSON.parse(decodeURIComponent(payloadEncoded));
+  currentExcuse = ex;
+  modalTitle.textContent = `موافقة على الاستئذان — ${ex.studentName}`;
+  modalBodyContent.innerHTML = getModalContentHtml(ex);
+  modalReply.value = '';
+  modalReplyGroup.classList.remove('hide');
+  excuseModal.show();
+  // set handlers
+  modalApproveBtn.onclick = () => performUpdate('مقبول');
+  modalRejectBtn.onclick = null;
+};
+
+window.onRejectClick = function(payloadEncoded) {
+  const ex = JSON.parse(decodeURIComponent(payloadEncoded));
+  currentExcuse = ex;
+  modalTitle.textContent = `رفض الاستئذان — ${ex.studentName}`;
+  modalBodyContent.innerHTML = getModalContentHtml(ex);
+  modalReply.value = '';
+  modalReplyGroup.classList.remove('hide');
+  excuseModal.show();
+  modalRejectBtn.onclick = () => performUpdate('مرفوض');
+  modalApproveBtn.onclick = null;
+};
+
+function getModalContentHtml(ex) {
+  return `
+    <div class="row g-2">
+      <div class="col-12 col-md-6"><strong>اسم الطالبة:</strong> ${escapeHtml(ex.studentName||'')}</div>
+      <div class="col-12 col-md-6"><strong>رقم الطالبة:</strong> ${escapeHtml(ex.studentId||'')}</div>
+      <div class="col-12 col-md-6"><strong>الصف / الفصل:</strong> ${escapeHtml(ex.grade||'')} - ${escapeHtml(ex.class||'')}</div>
+      <div class="col-12 col-md-6"><strong>رقم الجوال المُرسل:</strong> ${escapeHtml(ex.senderPhone||'')}</div>
+      <div class="col-12 col-md-6"><strong>تاريخ الاستئذان:</strong> ${escapeHtml(ex.excuseDate||'')}</div>
+      <div class="col-12 col-md-6"><strong>وقت الاستئذان:</strong> ${escapeHtml(ex.excuseTime||'')}</div>
+      <div class="col-12"><strong>السبب:</strong><div class="mt-1">${escapeHtml(ex.reason||'')}</div></div>
+      <div class="col-12"><strong>الحالة الحالية:</strong> <span class="status-badge ${ex.status === 'قيد المراجعة' ? 'status-pending' : ex.status === 'مقبول' ? 'status-approved' : 'status-rejected'}">${escapeHtml(ex.status || '')}</span></div>
+      ${ex.reply ? `<div class="col-12"><strong>رد سابق:</strong><div class="mt-1">${escapeHtml(ex.reply)}</div></div>` : ''}
+    </div>
+  `;
+}
+
+// perform update (approve/reject)
+async function performUpdate(newStatus) {
+  if (!currentExcuse) return;
+  const replyText = modalReply.value.trim();
+  if (!replyText) {
+    alert('يرجى كتابة ملاحظة/رد قبل التحديث');
+    return;
+  }
+
+  // disable buttons
+  modalApproveBtn.disabled = true;
+  modalRejectBtn.disabled = true;
+  modalApproveBtn.textContent = 'جاري الحفظ...';
+  modalRejectBtn.textContent = 'جاري الحفظ...';
+
+  try {
+    // call API
+    const payload = {
+      action: 'updateExcuseStatus',
+      rowIndex: currentExcuse.rowIndex,
+      status: newStatus,
+      reply: replyText
+    };
+    const res = await apiPost(payload);
+    if (!res || !res.success) {
+      throw new Error(res ? res.message : 'فشل التحديث');
+    }
+
+    // update local data (so UI updates instantly)
+    const idx = allExcuses.findIndex(e => e.rowIndex === currentExcuse.rowIndex);
+    if (idx !== -1) {
+      allExcuses[idx].status = newStatus;
+      allExcuses[idx].reply = replyText;
+      allExcuses[idx].replyDate = new Date().toLocaleString('ar-EG');
+      allExcuses[idx].whatsappStatus = 'لم يتم الإرسال'; // or set as desired
+    }
+
+    renderTable(getFilteredExcuses());
+    updateStats();
+    excuseModal.hide();
+    showActionAlert('✅ تم تحديث الحالة بنجاح', 'success');
+  } catch (err) {
+    showActionAlert('خطأ أثناء التحديث: ' + (err.message || ''), 'danger');
+  } finally {
+    modalApproveBtn.disabled = false;
+    modalRejectBtn.disabled = false;
+    modalApproveBtn.textContent = 'موافقة';
+    modalRejectBtn.textContent = 'رفض';
+  }
+}
+
+// initial - hide dashboard
+dashboardCard.classList.add('hide');
+
+</script>
 </body>
 </html>
