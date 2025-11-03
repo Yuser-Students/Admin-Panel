@@ -6,506 +6,93 @@
     <title>نظام يُسر - لوحة تحكم المديرة</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Cairo', sans-serif;
-            background: #f3f4f6;
-            min-height: 100vh;
-        }
-
-        /* Login Page */
-        .login-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 20px;
-        }
-
-        .login-box {
-            background: white;
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            width: 100%;
-            max-width: 400px;
-        }
-
-        .login-header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .login-icon {
-            font-size: 60px;
-            margin-bottom: 15px;
-        }
-
-        .login-title {
-            font-size: 24px;
-            color: #667eea;
-            font-weight: 700;
-            margin-bottom: 5px;
-        }
-
-        .login-subtitle {
-            font-size: 14px;
-            color: #666;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-label {
-            display: block;
-            font-size: 14px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 8px;
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 12px 15px;
-            font-size: 16px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-family: 'Cairo', sans-serif;
-            transition: all 0.3s;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        .btn {
-            width: 100%;
-            padding: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-family: 'Cairo', sans-serif;
-            transition: all 0.3s;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn:disabled {
-            background: #d1d5db;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .alert {
-            padding: 12px 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            display: none;
-        }
-
-        .alert-error {
-            background: #fee2e2;
-            color: #991b1b;
-            border: 1px solid #ef4444;
-        }
-
-        /* Dashboard */
-        .dashboard {
-            display: none;
-        }
-
-        .dashboard.active {
-            display: block;
-        }
-
-        .navbar {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 20px 30px;
-            color: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .navbar-title {
-            font-size: 24px;
-            font-weight: 700;
-        }
-
-        .logout-btn {
-            background: rgba(255,255,255,0.2);
-            color: white;
-            border: 2px solid white;
-            padding: 8px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-family: 'Cairo', sans-serif;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-
-        .logout-btn:hover {
-            background: white;
-            color: #667eea;
-        }
-
-        .dashboard-content {
-            max-width: 1400px;
-            margin: 30px auto;
-            padding: 0 20px;
-        }
-
-        /* Statistics */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .stat-icon {
-            font-size: 40px;
-        }
-
-        .stat-info {
-            flex: 1;
-        }
-
-        .stat-label {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 5px;
-        }
-
-        .stat-value {
-            font-size: 32px;
-            font-weight: 700;
-            color: #333;
-        }
-
-        /* Filters */
-        .filters {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-        }
-
-        .filter-group {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .filter-label {
-            font-size: 14px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 5px;
-        }
-
-        select.form-input {
-            padding: 10px;
-        }
-
-        /* Table */
-        .table-container {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-
-        .table-responsive {
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        thead {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        th {
-            padding: 15px;
-            text-align: right;
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        td {
-            padding: 15px;
-            border-bottom: 1px solid #f0f0f0;
-            font-size: 14px;
-        }
-
-        tbody tr:hover {
-            background: #f8f9ff;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .status-pending {
-            background: #fef3c7;
-            color: #92400e;
-        }
-
-        .status-approved {
-            background: #d1fae5;
-            color: #065f46;
-        }
-
-        .status-rejected {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 8px;
-        }
-
-        .icon-btn {
-            width: 32px;
-            height: 32px;
-            border-radius: 6px;
-            border: none;
-            cursor: pointer;
-            font-size: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s;
-        }
-
-        .btn-view {
-            background: #dbeafe;
-            color: #1e40af;
-        }
-
-        .btn-view:hover {
-            background: #3b82f6;
-            color: white;
-        }
-
-        .btn-approve {
-            background: #d1fae5;
-            color: #065f46;
-        }
-
-        .btn-approve:hover {
-            background: #10b981;
-            color: white;
-        }
-
-        .btn-reject {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        .btn-reject:hover {
-            background: #ef4444;
-            color: white;
-        }
-
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-            overflow-y: auto;
-            padding: 20px;
-        }
-
-        .modal.active {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-content {
-            background: white;
-            border-radius: 15px;
-            max-width: 600px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        .modal-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px 25px;
-            border-radius: 15px 15px 0 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-title {
-            font-size: 20px;
-            font-weight: 700;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-            padding: 0;
-            width: 30px;
-            height: 30px;
-        }
-
-        .modal-body {
-            padding: 25px;
-        }
-
-        .info-item {
-            margin-bottom: 15px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #f0f0f0;
-        }
-
-        .info-item:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-        }
-
-        .info-item-label {
-            font-weight: 600;
-            color: #667eea;
-            margin-bottom: 5px;
-        }
-
-        .info-item-value {
-            color: #333;
-        }
-
-        textarea.form-input {
-            min-height: 100px;
-            resize: vertical;
-        }
-
-        .modal-footer {
-            display: flex;
-            gap: 15px;
-            padding: 0 25px 25px;
-        }
-
-        .btn-secondary {
-            background: #e5e7eb;
-            color: #374151;
-        }
-
-        .btn-secondary:hover {
-            background: #d1d5db;
-        }
-
-        .btn-success {
-            background: #10b981;
-            color: white;
-        }
-
-        .btn-success:hover {
-            background: #059669;
-        }
-
-        .btn-danger {
-            background: #ef4444;
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background: #dc2626;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #9ca3af;
-        }
-
-        .empty-icon {
-            font-size: 60px;
-            margin-bottom: 15px;
-        }
-
+        /* نفس الـ CSS الذي أرسلته (لم أغيّر شيئًا) */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Cairo', sans-serif; background: #f3f4f6; min-height: 100vh; }
+        .login-container { display: flex; justify-content: center; align-items: center; min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; }
+        .login-box { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); width: 100%; max-width: 400px; }
+        .login-header { text-align: center; margin-bottom: 30px; }
+        .login-icon { font-size: 60px; margin-bottom: 15px; }
+        .login-title { font-size: 24px; color: #667eea; font-weight: 700; margin-bottom: 5px; }
+        .login-subtitle { font-size: 14px; color: #666; }
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; font-size: 14px; font-weight: 600; color: #333; margin-bottom: 8px; }
+        .form-input { width: 100%; padding: 12px 15px; font-size: 16px; border: 2px solid #e0e0e0; border-radius: 10px; font-family: 'Cairo', sans-serif; transition: all 0.3s; }
+        .form-input:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
+        .btn { width: 100%; padding: 12px; font-size: 16px; font-weight: 600; border: none; border-radius: 10px; cursor: pointer; font-family: 'Cairo', sans-serif; transition: all 0.3s; }
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4); }
+        .btn:disabled { background: #d1d5db; cursor: not-allowed; transform: none; }
+        .alert { padding: 12px 15px; border-radius: 8px; margin-bottom: 15px; display: none; }
+        .alert-error { background: #fee2e2; color: #991b1b; border: 1px solid #ef4444; }
+        .dashboard { display: none; }
+        .dashboard.active { display: block; }
+        .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px 30px; color: white; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .navbar-title { font-size: 24px; font-weight: 700; }
+        .logout-btn { background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 8px 20px; border-radius: 8px; cursor: pointer; font-family: 'Cairo', sans-serif; font-size: 14px; font-weight: 600; transition: all 0.3s; }
+        .logout-btn:hover { background: white; color: #667eea; }
+        .dashboard-content { max-width: 1400px; margin: 30px auto; padding: 0 20px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 20px; }
+        .stat-icon { font-size: 40px; }
+        .stat-info { flex: 1; }
+        .stat-label { font-size: 14px; color: #666; margin-bottom: 5px; }
+        .stat-value { font-size: 32px; font-weight: 700; color: #333; }
+        .filters { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        .filter-group { display: flex; flex-direction: column; }
+        .filter-label { font-size: 14px; font-weight: 600; color: #333; margin-bottom: 5px; }
+        select.form-input { padding: 10px; }
+        .table-container { background: white; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); overflow: hidden; }
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        thead { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        th { padding: 15px; text-align: right; font-weight: 600; font-size: 14px; }
+        td { padding: 15px; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
+        tbody tr:hover { background: #f8f9ff; }
+        .status-badge { display: inline-block; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .status-pending { background: #fef3c7; color: #92400e; }
+        .status-approved { background: #d1fae5; color: #065f46; }
+        .status-rejected { background: #fee2e2; color: #991b1b; }
+        .action-buttons { display: flex; gap: 8px; }
+        .icon-btn { width: 32px; height: 32px; border-radius: 6px; border: none; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: all 0.3s; }
+        .btn-view { background: #dbeafe; color: #1e40af; }
+        .btn-view:hover { background: #3b82f6; color: white; }
+        .btn-approve { background: #d1fae5; color: #065f46; }
+        .btn-approve:hover { background: #10b981; color: white; }
+        .btn-reject { background: #fee2e2; color: #991b1b; }
+        .btn-reject:hover { background: #ef4444; color: white; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; overflow-y: auto; padding: 20px; }
+        .modal.active { display: flex; justify-content: center; align-items: center; }
+        .modal-content { background: white; border-radius: 15px; max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto; }
+        .modal-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px 25px; border-radius: 15px 15px 0 0; display: flex; justify-content: space-between; align-items: center; }
+        .modal-title { font-size: 20px; font-weight: 700; }
+        .modal-close { background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 0; width: 30px; height: 30px; }
+        .modal-body { padding: 25px; }
+        .info-item { margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #f0f0f0; }
+        .info-item:last-child { border-bottom: none; margin-bottom: 0; }
+        .info-item-label { font-weight: 600; color: #667eea; margin-bottom: 5px; }
+        .info-item-value { color: #333; }
+        textarea.form-input { min-height: 100px; resize: vertical; }
+        .modal-footer { display: flex; gap: 15px; padding: 0 25px 25px; }
+        .btn-secondary { background: #e5e7eb; color: #374151; }
+        .btn-secondary:hover { background: #d1d5db; }
+        .btn-success { background: #10b981; color: white; }
+        .btn-success:hover { background: #059669; }
+        .btn-danger { background: #ef4444; color: white; }
+        .btn-danger:hover { background: #dc2626; }
+        .empty-state { text-align: center; padding: 60px 20px; color: #9ca3af; }
+        .empty-icon { font-size: 60px; margin-bottom: 15px; }
         @media (max-width: 768px) {
-            .navbar {
-                flex-direction: column;
-                gap: 15px;
-            }
-
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .filters {
-                grid-template-columns: 1fr;
-            }
-
-            .table-container {
-                overflow-x: auto;
-            }
-
-            table {
-                min-width: 900px;
-            }
+            .navbar { flex-direction: column; gap: 15px; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .filters { grid-template-columns: 1fr; }
+            .table-container { overflow-x: auto; }
+            table { min-width: 900px; }
         }
     </style>
 </head>
 <body>
+    <!-- نفس HTML الذي أرسلته (لم أغيّر شيئًا) -->
     <!-- Login Page -->
     <div id="loginPage" class="login-container">
         <div class="login-box">
@@ -689,27 +276,45 @@
     </div>
 
     <script>
-        // ضع هنا Web App URL الخاص بك
+        // ✅ رابط Web App الصحيح بدون مسافات
         const API_URL = 'https://script.google.com/macros/s/AKfycbyzLmNcvkJWG-0IUzXL4_omYaarctRfnlWx1dH5FR9Ko9oP3soELaue7Olx9AYzcoxEzg/exec';
         
         let allExcuses = [];
         let currentExcuse = null;
 
-        // Login
+        // دالة آمنة لتجنب XSS
+        function escapeHtml(text) {
+            if (text == null) return '';
+            return String(text)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '<')
+                .replace(/>/g, '>')
+                .replace(/"/g, '&quot;');
+        }
+
+        // Login Handler (مُصلح بالكامل)
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
             const loginAlert = document.getElementById('loginAlert');
             const submitBtn = e.target.querySelector('button[type="submit"]');
+
+            if (!username || !password) {
+                loginAlert.textContent = 'يرجى إدخال اسم المستخدم وكلمة المرور';
+                loginAlert.style.display = 'block';
+                return;
+            }
 
             try {
                 submitBtn.disabled = true;
                 submitBtn.textContent = 'جاري التحقق...';
+                loginAlert.style.display = 'none';
 
                 const response = await fetch(API_URL, {
                     method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         action: 'adminLogin',
                         username: username,
@@ -717,6 +322,8 @@
                     })
                 });
 
+                if (!response.ok) throw new Error(`الخادم أعاد حالة: ${response.status}`);
+                
                 const result = await response.json();
 
                 if (result.success) {
@@ -725,11 +332,12 @@
                     document.getElementById('dashboard').classList.add('active');
                     loadDashboard();
                 } else {
-                    loginAlert.textContent = result.message;
+                    loginAlert.textContent = result.message || 'اسم المستخدم أو كلمة المرور غير صحيحة';
                     loginAlert.style.display = 'block';
                 }
             } catch (error) {
-                loginAlert.textContent = 'خطأ في الاتصال بالخادم';
+                console.error('Login Error:', error);
+                loginAlert.innerHTML = 'فشل الاتصال بالخادم. تأكد من:<br>• نشر Web App لـ "Anyone"<br>• فتح الملف من Google Drive (ليس من جهازك)';
                 loginAlert.style.display = 'block';
             } finally {
                 submitBtn.disabled = false;
@@ -743,7 +351,7 @@
             location.reload();
         });
 
-        // Check if already logged in
+        // التحقق من تسجيل الدخول المسبق
         if (sessionStorage.getItem('adminLoggedIn') === 'true') {
             document.getElementById('loginPage').style.display = 'none';
             document.getElementById('dashboard').classList.add('active');
@@ -752,10 +360,15 @@
 
         // Load Dashboard
         async function loadDashboard() {
-            await Promise.all([
-                loadStatistics(),
-                loadExcuses()
-            ]);
+            try {
+                await Promise.all([
+                    loadStatistics(),
+                    loadExcuses()
+                ]);
+            } catch (error) {
+                console.error('Dashboard Load Error:', error);
+                alert('فشل تحميل البيانات. تحقق من الاتصال.');
+            }
         }
 
         // Load Statistics
@@ -763,19 +376,18 @@
             try {
                 const response = await fetch(API_URL, {
                     method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'getStatistics' })
                 });
-
                 const result = await response.json();
-
                 if (result.success) {
-                    document.getElementById('totalCount').textContent = result.data.total;
-                    document.getElementById('pendingCount').textContent = result.data.pending;
-                    document.getElementById('approvedCount').textContent = result.data.approved;
-                    document.getElementById('rejectedCount').textContent = result.data.rejected;
+                    document.getElementById('totalCount').textContent = result.data.total || 0;
+                    document.getElementById('pendingCount').textContent = result.data.pending || 0;
+                    document.getElementById('approvedCount').textContent = result.data.approved || 0;
+                    document.getElementById('rejectedCount').textContent = result.data.rejected || 0;
                 }
             } catch (error) {
-                console.error('Error loading statistics:', error);
+                console.error('Statistics Error:', error);
             }
         }
 
@@ -784,18 +396,17 @@
             try {
                 const response = await fetch(API_URL, {
                     method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'getAllExcuses' })
                 });
-
                 const result = await response.json();
-
                 if (result.success) {
                     allExcuses = result.data;
                     populateGradeFilter();
                     displayExcuses(allExcuses);
                 }
             } catch (error) {
-                console.error('Error loading excuses:', error);
+                console.error('Excuses Error:', error);
             }
         }
 
@@ -803,7 +414,7 @@
         function populateGradeFilter() {
             const grades = [...new Set(allExcuses.map(e => e.grade))];
             const gradeFilter = document.getElementById('gradeFilter');
-            
+            gradeFilter.innerHTML = '<option value="">الكل</option>';
             grades.forEach(grade => {
                 const option = document.createElement('option');
                 option.value = grade;
@@ -815,7 +426,6 @@
         // Display Excuses
         function displayExcuses(excuses) {
             const tbody = document.getElementById('excusesTableBody');
-            
             if (excuses.length === 0) {
                 tbody.innerHTML = `
                     <tr>
@@ -833,18 +443,17 @@
             tbody.innerHTML = excuses.map(excuse => {
                 const statusClass = excuse.status === 'قيد المراجعة' ? 'status-pending' : 
                                    excuse.status === 'مقبول' ? 'status-approved' : 'status-rejected';
-                
                 return `
                     <tr>
-                        <td>${excuse.studentId}</td>
-                        <td>${excuse.studentName}</td>
-                        <td>${excuse.grade}</td>
-                        <td>${excuse.class}</td>
-                        <td>${excuse.excuseNumber}</td>
-                        <td>${excuse.excuseDate}</td>
-                        <td>${excuse.excuseTime}</td>
-                        <td>${excuse.reason.substring(0, 30)}${excuse.reason.length > 30 ? '...' : ''}</td>
-                        <td><span class="status-badge ${statusClass}">${excuse.status}</span></td>
+                        <td>${escapeHtml(excuse.studentId)}</td>
+                        <td>${escapeHtml(excuse.studentName)}</td>
+                        <td>${escapeHtml(excuse.grade)}</td>
+                        <td>${escapeHtml(excuse.class)}</td>
+                        <td>${escapeHtml(excuse.excuseNumber)}</td>
+                        <td>${escapeHtml(excuse.excuseDate)}</td>
+                        <td>${escapeHtml(excuse.excuseTime)}</td>
+                        <td>${escapeHtml(excuse.reason.substring(0, 30))}${excuse.reason.length > 30 ? '...' : ''}</td>
+                        <td><span class="status-badge ${statusClass}">${escapeHtml(excuse.status)}</span></td>
                         <td>
                             <div class="action-buttons">
                                 <button class="icon-btn btn-view" onclick='viewExcuse(${JSON.stringify(excuse)})'>👁️</button>
@@ -860,62 +469,208 @@
         }
 
         // Filters
-        document.getElementById('searchFilter').addEventListener('input', applyFilters);
-        document.getElementById('statusFilter').addEventListener('change', applyFilters);
-        document.getElementById('gradeFilter').addEventListener('change', applyFilters);
+        document.getElementById('searchFilter').addEventListener('input', () => {
+            const filtered = applyFilters();
+            displayExcuses(filtered);
+        });
+        document.getElementById('statusFilter').addEventListener('change', () => {
+            const filtered = applyFilters();
+            displayExcuses(filtered);
+        });
+        document.getElementById('gradeFilter').addEventListener('change', () => {
+            const filtered = applyFilters();
+            displayExcuses(filtered);
+        });
 
         function applyFilters() {
             const searchTerm = document.getElementById('searchFilter').value.toLowerCase();
             const statusFilter = document.getElementById('statusFilter').value;
             const gradeFilter = document.getElementById('gradeFilter').value;
-
-            const filtered = allExcuses.filter(excuse => {
-                const matchSearch = excuse.studentName.toLowerCase().includes(searchTerm) || 
-                                   excuse.studentId.toString().includes(searchTerm);
+            return allExcuses.filter(excuse => {
+                const matchSearch = !searchTerm || 
+                    excuse.studentName.toLowerCase().includes(searchTerm) ||
+                    excuse.studentId.toString().toLowerCase().includes(searchTerm);
                 const matchStatus = !statusFilter || excuse.status === statusFilter;
                 const matchGrade = !gradeFilter || excuse.grade === gradeFilter;
-
                 return matchSearch && matchStatus && matchGrade;
             });
-
-            displayExcuses(filtered);
         }
 
         // View Excuse
         function viewExcuse(excuse) {
             const modalBody = document.getElementById('viewModalBody');
+            const statusBadgeClass = excuse.status === 'قيد المراجعة' ? 'status-pending' :
+                                    excuse.status === 'مقبول' ? 'status-approved' : 'status-rejected';
             modalBody.innerHTML = `
                 <div class="info-item">
                     <div class="info-item-label">📌 اسم الطالبة</div>
-                    <div class="info-item-value">${excuse.studentName}</div>
+                    <div class="info-item-value">${escapeHtml(excuse.studentName)}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-item-label">🆔 رقم الطالبة</div>
-                    <div class="info-item-value">${excuse.studentId}</div>
+                    <div class="info-item-value">${escapeHtml(excuse.studentId)}</div>
                 </div>
                 <div class="info-item">
-                    <div class="info-item-label">🎓 الصف والفصل</div>
-                    <div class="info-item-value">${excuse.grade} - فصل ${excuse.class}</div>
+                    <div class="info-item-label">🎓 الصف</div>
+                    <div class="info-item-value">${escapeHtml(excuse.grade)}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-item-label">📚 الفصل</div>
+                    <div class="info-item-value">${escapeHtml(excuse.class)}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-item-label">📱 رقم الجوال المُرسِل</div>
-                    <div class="info-item-value">${excuse.senderPhone}</div>
+                    <div class="info-item-value">${escapeHtml(excuse.senderPhone)}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-item-label">🔢 رقم الاستئذان</div>
-                    <div class="info-item-value">${excuse.excuseNumber}</div>
+                    <div class="info-item-value">${escapeHtml(excuse.excuseNumber)}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-item-label">📅 تاريخ الاستئذان</div>
-                    <div class="info-item-value">${excuse.excuseDate}</div>
+                    <div class="info-item-value">${escapeHtml(excuse.excuseDate)}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-item-label">⏰ وقت الاستئذان</div>
-                    <div class="info-item-value">${excuse.excuseTime}</div>
+                    <div class="info-item-value">${escapeHtml(excuse.excuseTime)}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-item-label">📝 سبب الاستئذان</div>
-                    <div class="info-item-value">${excuse.reason}</div>
+                    <div class="info-item-value">${escapeHtml(excuse.reason)}</div>
                 </div>
                 <div class="info-item">
-                    <div class="
+                    <div class="info-item-label">📋 الحالة</div>
+                    <div class="info-item-value">
+                        <span class="status-badge ${statusBadgeClass}">
+                            ${escapeHtml(excuse.status)}
+                        </span>
+                    </div>
+                </div>
+                ${excuse.reply ? `
+                    <div class="info-item">
+                        <div class="info-item-label">💬 رد المديرة</div>
+                        <div class="info-item-value">${escapeHtml(excuse.reply)}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">🕒 تاريخ الرد</div>
+                        <div class="info-item-value">${escapeHtml(excuse.replyDate)}</div>
+                    </div>
+                ` : `
+                    <div class="info-item">
+                        <div class="info-item-label">💬 رد المديرة</div>
+                        <div class="info-item-value">—</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label">🕒 تاريخ الرد</div>
+                        <div class="info-item-value">—</div>
+                    </div>
+                `}
+            `;
+            openModal('viewModal');
+        }
+
+        // Open Modals
+        function openApproveModal(excuse) {
+            currentExcuse = excuse;
+            document.getElementById('approveInfo').innerHTML = `
+                <div class="info-item">
+                    <div class="info-item-label">📌 الطالبة</div>
+                    <div class="info-item-value">${escapeHtml(excuse.studentName)}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-item-label">📝 السبب</div>
+                    <div class="info-item-value">${escapeHtml(excuse.reason)}</div>
+                </div>
+            `;
+            document.getElementById('approveReply').value = '';
+            openModal('approveModal');
+        }
+
+        function openRejectModal(excuse) {
+            currentExcuse = excuse;
+            document.getElementById('rejectInfo').innerHTML = `
+                <div class="info-item">
+                    <div class="info-item-label">📌 الطالبة</div>
+                    <div class="info-item-value">${escapeHtml(excuse.studentName)}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-item-label">📝 السبب</div>
+                    <div class="info-item-value">${escapeHtml(excuse.reason)}</div>
+                </div>
+            `;
+            document.getElementById('rejectReply').value = '';
+            openModal('rejectModal');
+        }
+
+        // Confirm Actions
+        document.getElementById('confirmApproveBtn').addEventListener('click', async () => {
+            const reply = document.getElementById('approveReply').value.trim();
+            if (reply.length < 5) {
+                alert('الرد يجب أن لا يقل عن 5 أحرف');
+                return;
+            }
+            await updateExcuseStatus('مقبول', reply);
+        });
+
+        document.getElementById('confirmRejectBtn').addEventListener('click', async () => {
+            const reply = document.getElementById('rejectReply').value.trim();
+            if (reply.length < 5) {
+                alert('سبب الرفض يجب أن لا يقل عن 5 أحرف');
+                return;
+            }
+            await updateExcuseStatus('مرفوض', reply);
+        });
+
+        // Update Status
+        async function updateExcuseStatus(status, reply) {
+            const btn = status === 'مقبول' ? document.getElementById('confirmApproveBtn') : document.getElementById('confirmRejectBtn');
+            try {
+                btn.disabled = true;
+                btn.textContent = 'جاري المعالجة...';
+
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'updateExcuseStatus',
+                        rowIndex: currentExcuse.rowIndex,
+                        status: status,
+                        reply: reply
+                    })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    closeModal(status === 'مقبول' ? 'approveModal' : 'rejectModal');
+                    loadDashboard();
+                    alert(`✅ تم ${status === 'مقبول' ? 'الموافقة' : 'الرفض'} بنجاح`);
+                } else {
+                    alert('❌ ' + (result.message || 'فشل في التحديث'));
+                }
+            } catch (error) {
+                console.error('Update Error:', error);
+                alert('❌ فشل الاتصال بالخادم');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = status === 'مقبول' ? 'تأكيد الموافقة' : 'تأكيد الرفض';
+            }
+        }
+
+        // Modal Functions
+        function openModal(id) {
+            document.getElementById(id).classList.add('active');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        // Close modal on background click
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) closeModal(modal.id);
+            });
+        });
+    </script>
+</body>
+</html>
