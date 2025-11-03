@@ -701,7 +701,7 @@
             ADMIN_PASSWORD: 'yusur2025',
             
             // Google Sheets API URL
-            SHEETS_API_URL: 'https://script.google.com/macros/s/AKfycbzhu7S7u7HkupPldQlXlO5FSO9nQm-ONf_lu7HVKKiBgOpkaN73Xvxi4KmB0yI0Qdob5Q/exec',
+            SHEETS_API_URL: 'https://script.google.com/macros/s/AKfycbzv_NuQHY1P053xdOm7dK5HpWqI7O8Rsspv6OtSquUwh1NlnLp-Hhz7VY50Yxv5NO2Dxg/exec',
             
             // n8n Webhook URL - سيُرسل البيانات تلقائياً عند التحديث
             N8N_WEBHOOK_URL: 'https://n8n.srv1096584.hstgr.cloud/webhook/yusur-new-request'
@@ -1069,20 +1069,10 @@
                 btn.disabled = true;
                 btn.textContent = 'جاري التحديث...';
 
-                // تحديث في Google Sheets
-                const response = await fetch(CONFIG.SHEETS_API_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        action: 'updateExcuseStatus',
-                        rowIndex: currentExcuse.rowIndex,
-                        status: status,
-                        reply: reply
-                    })
-                });
-
+                // تحديث في Google Sheets باستخدام GET request
+                const updateUrl = `${CONFIG.SHEETS_API_URL}?action=updateExcuseStatus&rowIndex=${currentExcuse.rowIndex}&status=${encodeURIComponent(status)}&reply=${encodeURIComponent(reply)}`;
+                
+                const response = await fetch(updateUrl);
                 const result = await response.json();
 
                 if (result.success) {
@@ -1113,7 +1103,7 @@
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('❌ خطأ في الاتصال بالخادم');
+                alert('❌ خطأ في الاتصال بالخادم: ' + error.message);
             } finally {
                 btn.disabled = false;
                 btn.textContent = originalText;
