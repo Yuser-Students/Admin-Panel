@@ -681,7 +681,8 @@
     </div>
 
     <script>
-        const API_URL = 'https://script.google.com/macros/s/AKfycbyzLmNcvkJWG-0IUzXL4_omYaarctRfnlWx1dH5FR9Ko9oP3soELaue7Olx9AYzcoxEzg/exec';
+        // ضع رابط Web App الخاص بك هنا
+        const API_URL = 'YOUR_WEB_APP_URL_HERE';
         
         let allExcuses = [];
         let currentExcuse = null;
@@ -698,19 +699,34 @@
             try {
                 submitBtn.disabled = true;
                 submitBtn.textContent = 'جاري التحقق...';
+                loginAlert.style.display = 'none';
 
-                if (username === 'admin' && password === 'yusur2025') {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'adminLogin',
+                        username: username,
+                        password: password
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
                     sessionStorage.setItem('adminLoggedIn', 'true');
                     document.getElementById('loginPage').style.display = 'none';
                     document.getElementById('dashboard').classList.add('active');
-                    loadDashboard();
-                    return;
+                    await loadDashboard();
+                } else {
+                    loginAlert.textContent = result.message || 'اسم المستخدم أو كلمة المرور غير صحيحة';
+                    loginAlert.style.display = 'block';
                 }
-
-                loginAlert.textContent = 'اسم المستخدم أو كلمة المرور غير صحيحة';
-                loginAlert.style.display = 'block';
             } catch (error) {
-                loginAlert.textContent = 'خطأ في الاتصال';
+                console.error('Login error:', error);
+                loginAlert.textContent = 'خطأ في الاتصال بالخادم. تحقق من رابط API';
                 loginAlert.style.display = 'block';
             } finally {
                 submitBtn.disabled = false;
@@ -730,7 +746,66 @@
         }
 
         async function loadDashboard() {
-            loadDemoData();
+            try {
+                await Promise.all([
+                    loadStatistics(),
+                    loadExcuses()
+                ]);
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                alert('خطأ في تحميل البيانات. تحقق من رابط API');
+            }
+        }
+
+        async function loadStatistics() {
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        action: 'getStatistics' 
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    document.getElementById('totalCount').textContent = result.data.total;
+                    document.getElementById('pendingCount').textContent = result.data.pending;
+                    document.getElementById('approvedCount').textContent = result.data.approved;
+                    document.getElementById('rejectedCount').textContent = result.data.rejected;
+                }
+            } catch (error) {
+                console.error('Error loading statistics:', error);
+            }
+        }
+
+        async function loadExcuses() {
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        action: 'getAllExcuses' 
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    allExcuses = result.data;
+                    populateGradeFilter();
+                    displayExcuses(allExcuses);
+                } else {
+                    console.error('Error:', result.message);
+                }
+            } catch (error) {
+                console.error('Error loading excuses:', error);
+            }
         }
 
         function loadDemoData() {
@@ -797,17 +872,8 @@
         }
 
         function updateStatsDisplay() {
-            const stats = {
-                total: allExcuses.length,
-                pending: allExcuses.filter(e => e.status === 'قيد المراجعة').length,
-                approved: allExcuses.filter(e => e.status === 'مقبول').length,
-                rejected: allExcuses.filter(e => e.status === 'مرفوض').length
-            };
-
-            document.getElementById('totalCount').textContent = stats.total;
-            document.getElementById('pendingCount').textContent = stats.pending;
-            document.getElementById('approvedCount').textContent = stats.approved;
-            document.getElementById('rejectedCount').textContent = stats.rejected;
+            // هذه الدالة لم تعد ضرورية لأننا نستخدم loadStatistics()
+            // لكن نتركها للتوافق
         }
 
         function populateGradeFilter() {
@@ -992,20 +1058,31 @@
             btn.textContent = 'جاري الموافقة...';
 
             try {
-                const index = allExcuses.findIndex(e => e.rowIndex === currentExcuse.rowIndex);
-                if (index !== -1) {
-                    allExcuses[index].status = 'مقبول';
-                    allExcuses[index].reply = reply;
-                    allExcuses[index].replyDate = new Date().toLocaleString('ar-SA');
-                    allExcuses[index].whatsappStatus = 'تم الإرسال';
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'updateExcuseStatus',
+                        rowIndex: currentExcuse.rowIndex,
+                        status: 'مقبول',
+                        reply: reply
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    await loadExcuses();
+                    await loadStatistics();
+                    closeModal('approveModal');
+                    alert('✅ تمت الموافقة على الاستئذان بنجاح');
+                } else {
+                    alert('خطأ: ' + result.message);
                 }
-
-                displayExcuses(applyFilters());
-                updateStatsDisplay();
-                closeModal('approveModal');
-
-                alert('✅ تمت الموافقة على الاستئذان بنجاح');
             } catch (error) {
+                console.error('Approve error:', error);
                 alert('حدث خطأ أثناء الموافقة');
             } finally {
                 btn.disabled = false;
@@ -1026,20 +1103,31 @@
             btn.textContent = 'جاري الرفض...';
 
             try {
-                const index = allExcuses.findIndex(e => e.rowIndex === currentExcuse.rowIndex);
-                if (index !== -1) {
-                    allExcuses[index].status = 'مرفوض';
-                    allExcuses[index].reply = reply;
-                    allExcuses[index].replyDate = new Date().toLocaleString('ar-SA');
-                    allExcuses[index].whatsappStatus = 'تم الإرسال';
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'updateExcuseStatus',
+                        rowIndex: currentExcuse.rowIndex,
+                        status: 'مرفوض',
+                        reply: reply
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    await loadExcuses();
+                    await loadStatistics();
+                    closeModal('rejectModal');
+                    alert('❌ تم رفض الاستئذان');
+                } else {
+                    alert('خطأ: ' + result.message);
                 }
-
-                displayExcuses(applyFilters());
-                updateStatsDisplay();
-                closeModal('rejectModal');
-
-                alert('❌ تم رفض الاستئذان');
             } catch (error) {
+                console.error('Reject error:', error);
                 alert('حدث خطأ أثناء الرفض');
             } finally {
                 btn.disabled = false;
