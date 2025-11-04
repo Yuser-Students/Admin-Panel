@@ -438,6 +438,24 @@
             color: #333;
         }
 
+        .attachment-btn {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 14px;
+            margin-top: 5px;
+            margin-inline-start: 0;
+            transition: background 0.3s;
+        }
+
+        .attachment-btn:hover {
+            background: #5a6fd8;
+            text-decoration: none;
+        }
+
         textarea.form-input {
             min-height: 100px;
             resize: vertical;
@@ -701,7 +719,7 @@
             ADMIN_PASSWORD: 'yusur2025',
             
             // Google Sheets API URL
-            SHEETS_API_URL: 'https://script.google.com/macros/s/AKfycbzv_NuQHY1P053xdOm7dK5HpWqI7O8Rsspv6OtSquUwh1NlnLp-Hhz7VY50Yxv5NO2Dxg/exec',
+            SHEETS_API_URL: 'https://script.google.com/macros/s/AKfycbzON7CSq1xmnIAbbM8kuMXCiGt1wBcZw2I0j8wkwVI4o3pwBulW55EIBEHDshLZB2vDCQ/exec',
             
             // n8n Webhook URL - سيُرسل البيانات تلقائياً عند التحديث
             N8N_WEBHOOK_URL: 'https://n8n.srv1096584.hstgr.cloud/webhook/yusur-new-request'
@@ -893,7 +911,7 @@
         }
 
         // ==========================================
-        // عرض تفاصيل الطلب
+        // عرض تفاصيل الطلب (مع أزرار الملفات المرفقة!)
         // ==========================================
         
         function viewExcuse(index) {
@@ -903,6 +921,19 @@
             const statusClass = excuse.status === 'قيد المراجعة' ? 'status-pending' : 
                                excuse.status === 'مقبول' ? 'status-approved' : 'status-rejected';
             
+            // تحضير أزرار الملفات
+            let attachmentsHtml = '';
+            if (excuse.attachments) {
+                const urls = excuse.attachments.split('\n').filter(url => url.trim() !== '');
+                if (urls.length > 0) {
+                    attachmentsHtml = '<div class="info-item-value">';
+                    urls.forEach((url, i) => {
+                        attachmentsHtml += `<a href="${url}" target="_blank" class="attachment-btn">📎 عرض الملف ${i + 1}</a>`;
+                    });
+                    attachmentsHtml += '</div>';
+                }
+            }
+
             modalBody.innerHTML = `
                 <div class="info-item">
                     <div class="info-item-label">📌 اسم الطالبة</div>
@@ -936,6 +967,12 @@
                     <div class="info-item-label">📝 سبب الاستئذان</div>
                     <div class="info-item-value">${excuse.reason}</div>
                 </div>
+                ${attachmentsHtml ? `
+                    <div class="info-item">
+                        <div class="info-item-label">📎 الملفات المرفقة</div>
+                        ${attachmentsHtml}
+                    </div>
+                ` : ''}
                 <div class="info-item">
                     <div class="info-item-label">📊 الحالة</div>
                     <div class="info-item-value"><span class="status-badge ${statusClass}">${excuse.status}</span></div>
